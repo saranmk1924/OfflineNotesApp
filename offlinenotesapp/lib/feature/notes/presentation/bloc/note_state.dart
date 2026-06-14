@@ -22,6 +22,22 @@ class NoteLoaded extends NoteState {
   List<Object?> get props => [notes];
 }
 
+class ConflictDetectedState extends NoteState {
+  final NoteEntity localNote;
+  final NoteEntity serverNote;
+
+  const ConflictDetectedState({
+    required this.localNote,
+    required this.serverNote,
+  });
+
+  @override
+  List<Object?> get props => [
+        localNote,
+        serverNote,
+      ];
+}
+
 class NoteError extends NoteState {
   final String message;
 
@@ -29,4 +45,20 @@ class NoteError extends NoteState {
 
   @override
   List<Object?> get props => [message];
+}
+
+class NoteConflict extends NoteState {
+  final NoteEntity localNote;
+  final NoteEntity serverNote;
+
+  const NoteConflict({
+    required this.localNote,
+    required this.serverNote,
+  });
+
+  @override
+  List<Object?> get props => [
+        localNote,
+        serverNote,
+      ];
 }

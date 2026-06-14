@@ -1,3 +1,4 @@
+import '../entities/conflict_entity.dart';
 import '../entities/note_entity.dart';
 
 abstract interface class NotesRepository {
@@ -9,5 +10,15 @@ abstract interface class NotesRepository {
 
   Future<List<NoteEntity>> getNotes();
 
-  Future<void> syncNotes();
+  Future<ConflictEntity?> syncNotes();
+
+  Future<void> resolveWithLocal(NoteEntity note);
+
+  Future<void> resolveWithServer(NoteEntity note);
+
+  Future<(NoteEntity, NoteEntity)?> checkConflict();
+
+  Future<void> useLocalVersion(NoteEntity localNote);
+
+  Future<void> useServerVersion(NoteEntity serverNote);
 }

@@ -1,3 +1,4 @@
+import '../entities/conflict_entity.dart';
 import '../repository/notes_repository.dart';
 
 class SyncNotesUsecase {
@@ -5,7 +6,7 @@ class SyncNotesUsecase {
 
   SyncNotesUsecase(this.repository);
 
-  Future<void> call() async {
-    await repository.syncNotes();
+  Future<ConflictEntity?> call() async {
+    return await repository.syncNotes();
   }
 }

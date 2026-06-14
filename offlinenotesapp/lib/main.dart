@@ -4,9 +4,9 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:offlinenotesapp/core/constants/hive_constants.dart';
 import 'package:offlinenotesapp/core/dependency/init_dependencies.dart';
 import 'package:offlinenotesapp/core/theme/app_theme.dart';
-import 'package:offlinenotesapp/feature/notes/data/datasource/remote/notes_remote_datasource.dart';
 import 'package:offlinenotesapp/feature/notes/presentation/bloc/note_bloc.dart';
 import 'package:offlinenotesapp/feature/notes/presentation/bloc/note_event.dart';
+import 'package:offlinenotesapp/feature/notes/presentation/cubit/connectivity_cubit.dart';
 import 'package:offlinenotesapp/feature/notes/presentation/pages/notes_page.dart';
 
 Future<void> main() async {
@@ -18,17 +18,17 @@ Future<void> main() async {
 
   await initDependencies(notesBox);
 
-//   //testing
+  //   //testing
 
-//   final remoteDatasource =
-//     sl<NotesRemoteDataSource>();
+  //   final remoteDatasource =
+  //     sl<NotesRemoteDataSource>();
 
-// final notes =
-//     await remoteDatasource.getNotes();
+  // final notes =
+  //     await remoteDatasource.getNotes();
 
-// debugPrint(
-//   'SERVER NOTES COUNT : ${notes.length}',
-// );
+  // debugPrint(
+  //   'SERVER NOTES COUNT : ${notes.length}',
+  // );
 
   runApp(const OfflineNotesApp());
 }
@@ -43,6 +43,8 @@ class OfflineNotesApp extends StatelessWidget {
         BlocProvider<NoteBloc>(
           create: (_) => sl<NoteBloc>()..add(LoadNotesEvent()),
         ),
+
+        BlocProvider(create: (_) => sl<ConnectivityCubit>()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,

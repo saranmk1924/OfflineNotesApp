@@ -31,15 +31,15 @@ class NotesRemoteDataSourceImpl implements NotesRemoteDataSource {
   @override
   Future<NoteModel> updateNote(NoteModel note) async {
   //  final response = await dio.put('${ApiConstants.notes}/${note.id}', data: note.toJson());
-    print("UPDATING ID => ${note.id}");
-  print("DATA => ${note.toJson()}");
+  //   print("UPDATING ID => ${note.id}");
+  // print("DATA => ${note.toJson()}");
 
   final response = await dio.put(
     '${ApiConstants.notes}/${note.id}',
     data: note.toJson(),
   );
 
-  print("UPDATE RESPONSE => ${response.data}");
+  // print("UPDATE RESPONSE => ${response.data}");
     return NoteModel.fromJson(Map<String,dynamic>.from(response.data));
   }
 

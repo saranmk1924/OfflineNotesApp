@@ -27,11 +27,13 @@ class NotesLocalDataSourceImpl implements NotesLocalDataSource {
 
   @override
   Future<List<NoteModel>> getNotes() async {
-    final notes = notesBox.values.toList();
-
-    return notes
+    final notes = notesBox.values
         .map((note) => NoteModel.fromJson(Map<String, dynamic>.from(note)))
         .toList();
+
+    notes.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+
+    return notes;
   }
 
   @override

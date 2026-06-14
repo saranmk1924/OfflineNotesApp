@@ -39,3 +39,41 @@ class DeleteNoteEvent extends NoteEvent {
 }
 
 class SyncNotesEvent extends NoteEvent {}
+
+class ResolveConflictUseLocalEvent extends NoteEvent {
+  final NoteEntity localNote;
+
+  const ResolveConflictUseLocalEvent(this.localNote);
+
+  @override
+  List<Object?> get props => [localNote];
+}
+
+class ResolveConflictUseServerEvent extends NoteEvent {
+  final NoteEntity serverNote;
+
+  const ResolveConflictUseServerEvent(this.serverNote);
+
+  @override
+  List<Object?> get props => [serverNote];
+}
+
+class CheckConflictEvent extends NoteEvent {}
+
+class UseLocalVersionEvent extends NoteEvent {
+  final NoteEntity note;
+
+  const UseLocalVersionEvent(this.note);
+
+  @override
+  List<Object?> get props => [note];
+}
+
+class UseServerVersionEvent extends NoteEvent {
+  final NoteEntity note;
+
+  const UseServerVersionEvent(this.note);
+
+  @override
+  List<Object?> get props => [note];
+}
