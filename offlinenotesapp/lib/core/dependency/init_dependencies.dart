@@ -1,0 +1,57 @@
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:get_it/get_it.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:offlinenotesapp/core/network/connectivity_service.dart';
+import 'package:offlinenotesapp/core/network/dio_client.dart';
+import 'package:offlinenotesapp/feature/notes/data/datasource/remote/notes_remote_datasource.dart';
+import 'package:offlinenotesapp/feature/notes/data/datasource/remote/notes_remote_datasource_impl.dart';
+import 'package:offlinenotesapp/feature/notes/domain/usecase/add_note_usecase.dart';
+import 'package:offlinenotesapp/feature/notes/domain/usecase/delete_note_usecase.dart';
+import 'package:offlinenotesapp/feature/notes/domain/usecase/get_notes_usecase.dart';
+import 'package:offlinenotesapp/feature/notes/domain/usecase/update_note_usecase.dart';
+import 'package:offlinenotesapp/feature/notes/presentation/bloc/note_bloc.dart';
+
+import '../../feature/notes/data/datasource/local/notes_local_datasource.dart';
+import '../../feature/notes/data/datasource/local/notes_local_datasource_impl.dart';
+import '../../feature/notes/data/repository/notes_repository_impl.dart';
+import '../../feature/notes/domain/repository/notes_repository.dart';
+
+//service locator
+final sl = GetIt.instance;
+
+Future<void> initDependencies(Box notesBox) async {
+  sl.registerLazySingleton(DioClient.new);
+
+  /// Datasource
+  sl.registerLazySingleton<NotesLocalDataSource>(
+    () => NotesLocalDataSourceImpl(notesBox),
+  );
+
+  sl.registerLazySingleton<NotesRemoteDataSource>(
+    () => NotesRemoteDataSourceImpl(sl()),
+  );
+
+  /// Repository
+  sl.registerLazySingleton<NotesRepository>(() => NotesRepositoryImpl(sl()));
+
+  /// UseCases
+  sl.registerLazySingleton(() => AddNoteUsecase(sl()));
+
+  sl.registerLazySingleton(() => UpdateNoteUsecase(sl()));
+
+  sl.registerLazySingleton(() => DeleteNoteUsecase(sl()));
+
+  sl.registerLazySingleton(() => GetNotesUsecase(sl()));
+
+  sl.registerFactory(
+    () => NoteBloc(
+      addNote: sl(),
+      updateNote: sl(),
+      deleteNote: sl(),
+      getNotes: sl(),
+    ),
+  );
+
+  sl.registerLazySingleton(Connectivity.new);
+  sl.registerLazySingleton(() => ConnectivityService(sl()));
+}
