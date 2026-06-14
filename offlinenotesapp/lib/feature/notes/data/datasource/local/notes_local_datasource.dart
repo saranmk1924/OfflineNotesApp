@@ -8,4 +8,6 @@ abstract interface class NotesLocalDataSource {
   Future<void> deleteNote(String id);
 
   Future<List<NoteModel>> getNotes();
+
+  Future<void> saveNotes(List<NoteModel> notes);
 }

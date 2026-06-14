@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:offlinenotesapp/feature/notes/domain/entities/sync_status.dart';
 import 'package:offlinenotesapp/feature/notes/presentation/bloc/note_bloc.dart';
 import 'package:offlinenotesapp/feature/notes/presentation/bloc/note_event.dart';
 import 'package:offlinenotesapp/feature/notes/presentation/bloc/note_state.dart';
@@ -11,7 +12,17 @@ class NotesPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Notes')),
+      appBar: AppBar(
+        title: const Text('Notes'),
+        actions: [
+          IconButton(
+            onPressed: () {
+              context.read<NoteBloc>().add(SyncNotesEvent());
+            },
+            icon: const Icon(Icons.sync),
+          ),
+        ],
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.push(
@@ -38,6 +49,11 @@ class NotesPage extends StatelessWidget {
                 final note = state.notes[index];
 
                 return ListTile(
+                  leading: Icon(
+                    note.syncStatus == SyncStatus.synced
+                        ? Icons.cloud_done
+                        : Icons.cloud_upload,
+                  ),
                   title: Text(note.title),
                   subtitle: Text(note.body),
                   onTap: () {

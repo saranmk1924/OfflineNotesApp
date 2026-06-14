@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 import '../../models/note_model.dart';
@@ -10,18 +11,13 @@ class NotesLocalDataSourceImpl implements NotesLocalDataSource {
 
   @override
   Future<void> addNote(NoteModel note) async {
-    await notesBox.put(
-      note.id,
-      note.toJson(),
-    );
+    await notesBox.put(note.id, note.toJson());
+    debugPrint("LOCAL ID => ${note.id}");
   }
 
   @override
   Future<void> updateNote(NoteModel note) async {
-    await notesBox.put(
-      note.id,
-      note.toJson(),
-    );
+    await notesBox.put(note.id, note.toJson());
   }
 
   @override
@@ -34,11 +30,16 @@ class NotesLocalDataSourceImpl implements NotesLocalDataSource {
     final notes = notesBox.values.toList();
 
     return notes
-        .map(
-          (note) => NoteModel.fromJson(
-            Map<String, dynamic>.from(note),
-          ),
-        )
+        .map((note) => NoteModel.fromJson(Map<String, dynamic>.from(note)))
         .toList();
+  }
+
+  @override
+  Future<void> saveNotes(List<NoteModel> notes) async {
+    await notesBox.clear();
+
+    for (final note in notes) {
+      await notesBox.put(note.id, note.toJson());
+    }
   }
 }

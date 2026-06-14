@@ -18,17 +18,17 @@ Future<void> main() async {
 
   await initDependencies(notesBox);
 
-  //testing
+//   //testing
 
-  final remoteDatasource =
-    sl<NotesRemoteDataSource>();
+//   final remoteDatasource =
+//     sl<NotesRemoteDataSource>();
 
-final notes =
-    await remoteDatasource.getNotes();
+// final notes =
+//     await remoteDatasource.getNotes();
 
-debugPrint(
-  'SERVER NOTES COUNT : ${notes.length}',
-);
+// debugPrint(
+//   'SERVER NOTES COUNT : ${notes.length}',
+// );
 
   runApp(const OfflineNotesApp());
 }

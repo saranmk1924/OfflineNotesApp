@@ -5,57 +5,57 @@ import '../../../../../core/network/dio_client.dart';
 import '../../models/note_model.dart';
 import 'notes_remote_datasource.dart';
 
-class NotesRemoteDataSourceImpl
-    implements NotesRemoteDataSource {
+class NotesRemoteDataSourceImpl implements NotesRemoteDataSource {
   final DioClient dioClient;
 
-  NotesRemoteDataSourceImpl(
-    this.dioClient,
-  );
+  NotesRemoteDataSourceImpl(this.dioClient);
 
   Dio get dio => dioClient.dio;
 
   @override
   Future<List<NoteModel>> getNotes() async {
-    final response = await dio.get(
-      ApiConstants.notes,
-    );
+    final response = await dio.get(ApiConstants.notes);
 
     return (response.data as List)
-        .map(
-          (e) => NoteModel.fromJson(
-            Map<String, dynamic>.from(e),
-          ),
-        )
+        .map((e) => NoteModel.fromJson(Map<String, dynamic>.from(e)))
         .toList();
   }
 
   @override
-  Future<void> addNote(
-    NoteModel note,
-  ) async {
-    await dio.post(
-      ApiConstants.notes,
-      data: note.toJson(),
-    );
+  Future<NoteModel> addNote(NoteModel note) async {
+   final response = await dio.post(ApiConstants.notes, data: note.toJson());
+
+    return NoteModel.fromJson(Map<String,dynamic>.from(response.data));
   }
 
   @override
-  Future<void> updateNote(
-    NoteModel note,
-  ) async {
-    await dio.put(
-      '${ApiConstants.notes}/${note.id}',
-      data: note.toJson(),
-    );
+  Future<NoteModel> updateNote(NoteModel note) async {
+  //  final response = await dio.put('${ApiConstants.notes}/${note.id}', data: note.toJson());
+    print("UPDATING ID => ${note.id}");
+  print("DATA => ${note.toJson()}");
+
+  final response = await dio.put(
+    '${ApiConstants.notes}/${note.id}',
+    data: note.toJson(),
+  );
+
+  print("UPDATE RESPONSE => ${response.data}");
+    return NoteModel.fromJson(Map<String,dynamic>.from(response.data));
   }
 
   @override
-  Future<void> deleteNote(
-    String id,
-  ) async {
-    await dio.delete(
-      '${ApiConstants.notes}/$id',
-    );
+  Future<void> deleteNote(String id) async {
+    await dio.delete('${ApiConstants.notes}/$id');
+  }
+
+  @override
+  Future<NoteModel?> getNoteById(String id) async {
+    try {
+      final response = await dio.get('${ApiConstants.notes}/$id');
+
+      return NoteModel.fromJson(Map<String, dynamic>.from(response.data));
+    } catch (_) {
+      return null;
+    }
   }
 }

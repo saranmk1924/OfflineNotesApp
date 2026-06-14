@@ -8,6 +8,7 @@ import 'package:offlinenotesapp/feature/notes/data/datasource/remote/notes_remot
 import 'package:offlinenotesapp/feature/notes/domain/usecase/add_note_usecase.dart';
 import 'package:offlinenotesapp/feature/notes/domain/usecase/delete_note_usecase.dart';
 import 'package:offlinenotesapp/feature/notes/domain/usecase/get_notes_usecase.dart';
+import 'package:offlinenotesapp/feature/notes/domain/usecase/sync_notes_usecase.dart';
 import 'package:offlinenotesapp/feature/notes/domain/usecase/update_note_usecase.dart';
 import 'package:offlinenotesapp/feature/notes/presentation/bloc/note_bloc.dart';
 
@@ -32,7 +33,9 @@ Future<void> initDependencies(Box notesBox) async {
   );
 
   /// Repository
-  sl.registerLazySingleton<NotesRepository>(() => NotesRepositoryImpl(sl()));
+  sl.registerLazySingleton<NotesRepository>(
+    () => NotesRepositoryImpl(sl(), sl()),
+  );
 
   /// UseCases
   sl.registerLazySingleton(() => AddNoteUsecase(sl()));
@@ -43,12 +46,15 @@ Future<void> initDependencies(Box notesBox) async {
 
   sl.registerLazySingleton(() => GetNotesUsecase(sl()));
 
+  sl.registerLazySingleton(() => SyncNotesUsecase(sl()));
+
   sl.registerFactory(
     () => NoteBloc(
       addNote: sl(),
       updateNote: sl(),
       deleteNote: sl(),
       getNotes: sl(),
+      syncNotes: sl(),
     ),
   );
 

@@ -8,4 +8,6 @@ abstract interface class NotesRepository {
   Future<void> deleteNote(String id);
 
   Future<List<NoteEntity>> getNotes();
+
+  Future<void> syncNotes();
 }
