@@ -44,9 +44,11 @@ class ConflictDialog {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Both local and server versions were modified.',
-                  style: TextStyle(color: AppPalette.white, fontSize: 17),
+                Text(
+                  localNote.isDeleted
+                      ? 'This note was deleted on this device but modified on another device.'
+                      : 'Both local and server versions were modified.',
+                  style: const TextStyle(color: AppPalette.white, fontSize: 17),
                 ),
 
                 const SizedBox(height: 20),
@@ -68,20 +70,34 @@ class ConflictDialog {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      Text(
-                        localNote.title,
-                        style: TextStyle(
-                          color: AppPalette.white70,
-                          fontSize: 15,
+
+                      const SizedBox(height: 6),
+
+                      if (localNote.isDeleted)
+                        const Text(
+                          '🗑️ Note Deleted',
+                          style: TextStyle(
+                            color: AppPalette.red,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        )
+                      else ...[
+                        Text(
+                          localNote.title,
+                          style: const TextStyle(
+                            color: AppPalette.white70,
+                            fontSize: 15,
+                          ),
                         ),
-                      ),
-                      Text(
-                        localNote.body,
-                        style: TextStyle(
-                          color: AppPalette.white70,
-                          fontSize: 15,
+                        Text(
+                          localNote.body,
+                          style: const TextStyle(
+                            color: AppPalette.white70,
+                            fontSize: 15,
+                          ),
                         ),
-                      ),
+                      ],
                     ],
                   ),
                 ),
@@ -105,20 +121,34 @@ class ConflictDialog {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      Text(
-                        serverNote.title,
-                        style: TextStyle(
-                          color: AppPalette.white70,
-                          fontSize: 15,
+
+                      const SizedBox(height: 6),
+
+                      if (serverNote.isDeleted)
+                        const Text(
+                          '🗑️ Note Deleted',
+                          style: TextStyle(
+                            color: AppPalette.red,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        )
+                      else ...[
+                        Text(
+                          serverNote.title,
+                          style: const TextStyle(
+                            color: AppPalette.white70,
+                            fontSize: 15,
+                          ),
                         ),
-                      ),
-                      Text(
-                        serverNote.body,
-                        style: TextStyle(
-                          color: AppPalette.white70,
-                          fontSize: 15,
+                        Text(
+                          serverNote.body,
+                          style: const TextStyle(
+                            color: AppPalette.white70,
+                            fontSize: 15,
+                          ),
                         ),
-                      ),
+                      ],
                     ],
                   ),
                 ),
@@ -128,6 +158,10 @@ class ConflictDialog {
           actions: [
             ElevatedButton(
               style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 14,
+                ),
                 backgroundColor: AppPalette.purple,
                 foregroundColor: AppPalette.white,
                 shape: RoundedRectangleBorder(
@@ -143,13 +177,14 @@ class ConflictDialog {
                   icon: Icons.check_circle,
                 );
               },
-              child: const Text(
-                'Use Local',
-                style: TextStyle(color: AppPalette.white, fontSize: 15),
-              ),
+              child: Text('Use Local'),
             ),
             OutlinedButton(
               style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 14,
+                ),
                 side: const BorderSide(color: AppPalette.purple),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -164,10 +199,7 @@ class ConflictDialog {
                   icon: Icons.check_circle,
                 );
               },
-              child: const Text(
-                'Use Server',
-                style: TextStyle(color: AppPalette.white, fontSize: 15),
-              ),
+              child: Text('Use Server'),
             ),
           ],
         );

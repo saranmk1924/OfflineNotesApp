@@ -50,17 +50,40 @@ class NotesRepositoryImpl implements NotesRepository {
   Future<ConflictEntity?> syncNotes() async {
     final localNotes = await localDataSource.getNotes();
 
-    // print("LOCAL COUNT => ${localNotes.length}");
-
-    // for (final note in localNotes) {
-    //   print("LOCAL NOTE => ${note.id} | ${note.title} | ${note.syncStatus}");
-    // }
-    // print(":Local notesssssssssss: $localNotes");
-
     final updatedNotes = <NoteModel>[];
 
     for (final note in localNotes) {
+      final serverNote = await remoteDataSource.getNoteById(note.id);
+      print("LOCAL LAST SYNC => ${note.lastSyncedAt}");
+      print("LOCAL UPDATED   => ${note.updatedAt}");
+
+      print("SERVER UPDATED  => ${serverNote?.updatedAt}");
+
+      print(
+        "LOCAL DELETED AFTER SYNC => "
+        "${note.lastSyncedAt != null && note.updatedAt.isAfter(note.lastSyncedAt!)}",
+      );
+
+      print(
+        "SERVER CHANGED AFTER SYNC => "
+        "${serverNote != null && note.lastSyncedAt != null && serverNote.updatedAt.isAfter(note.lastSyncedAt!)}",
+      );
       if (note.isDeleted) {
+        final localDeletedAfterSync =
+            note.lastSyncedAt != null &&
+            note.updatedAt.isAfter(note.lastSyncedAt!);
+
+        final serverChangedAfterSync =
+            serverNote != null &&
+            note.lastSyncedAt != null &&
+            serverNote.updatedAt.isAfter(note.lastSyncedAt!);
+
+        if (localDeletedAfterSync && serverChangedAfterSync) {
+          print("DELETE VS UPDATE CONFLICT DETECTED");
+
+          return ConflictEntity(localNote: note, serverNote: serverNote);
+        }
+
         try {
           await remoteDataSource.deleteNote(note.id);
 
@@ -77,24 +100,29 @@ class NotesRepositoryImpl implements NotesRepository {
 
       try {
         NoteModel syncedNote;
-        final serverNote = await remoteDataSource.getNoteById(note.id);
-        print("LOCAL UPDATED => ${note.updatedAt}");
-        print("LOCAL LASTSYNC => ${note.lastSyncedAt}");
+        // final serverNote = await remoteDataSource.getNoteById(note.id);
 
-        print("SERVER UPDATED => ${serverNote?.updatedAt}");
-
-        print(
-          "LOCAL CHANGED => ${note.lastSyncedAt != null && note.updatedAt.isAfter(note.lastSyncedAt!)}",
-        );
-
-        print(
-          "SERVER CHANGED => ${serverNote != null && note.lastSyncedAt != null && serverNote.updatedAt.isAfter(note.lastSyncedAt!)}",
-        );
-        if (serverNote != null &&
+        final localChanged =
             note.lastSyncedAt != null &&
-            note.updatedAt.isAfter(note.lastSyncedAt!) &&
-            serverNote.updatedAt.isAfter(note.lastSyncedAt!)) {
-          print("CONFLICT DETECTED");
+            note.updatedAt.isAfter(note.lastSyncedAt!);
+
+        final serverChanged =
+            serverNote != null &&
+            note.lastSyncedAt != null &&
+            serverNote.updatedAt.isAfter(note.lastSyncedAt!);
+
+        /// LOCAL edited, SERVER deleted
+        if (serverNote != null && serverNote.isDeleted && localChanged) {
+          return ConflictEntity(localNote: note, serverNote: serverNote);
+        }
+
+        /// LOCAL deleted, SERVER edited
+        if (note.isDeleted && serverNote != null && serverChanged) {
+          return ConflictEntity(localNote: note, serverNote: serverNote);
+        }
+
+        // server & local edited
+        if (serverNote != null && localChanged && serverChanged) {
           return ConflictEntity(localNote: note, serverNote: serverNote);
         }
 
@@ -206,6 +234,8 @@ class NotesRepositoryImpl implements NotesRepository {
     await remoteDataSource.updateNote(syncedNote);
 
     await localDataSource.updateNote(syncedNote);
+
+    await localDataSource.saveLastSyncTime();
   }
 
   @override
@@ -215,6 +245,8 @@ class NotesRepositoryImpl implements NotesRepository {
     ).copyWith(syncStatus: SyncStatus.synced, lastSyncedAt: DateTime.now());
 
     await localDataSource.updateNote(syncedNote);
+
+    await localDataSource.saveLastSyncTime();
   }
 
   @override

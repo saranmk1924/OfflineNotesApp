@@ -80,9 +80,13 @@ class NoteBloc extends Bloc<NoteEvent, NoteState> {
         isDeleted: true,
         syncStatus: SyncStatus.pending,
         updatedAt: DateTime.now(),
-        lastSyncedAt: DateTime.now(),
       ),
     );
+
+    
+    print("IS DELETED => ${note.isDeleted}");
+    print("UPDATED AT => ${note.updatedAt}");
+    print("LAST SYNCED => ${note.lastSyncedAt}");
 
     await _emitLoaded(emit);
   }
