@@ -48,153 +48,157 @@ class NotesRepositoryImpl implements NotesRepository {
 
   @override
   Future<ConflictEntity?> syncNotes() async {
-    final localNotes = await localDataSource.getNotes();
+    try {
+      final localNotes = await localDataSource.getNotes();
 
-    final updatedNotes = <NoteModel>[];
+      final updatedNotes = <NoteModel>[];
 
-    for (final note in localNotes) {
-      final serverNote = await remoteDataSource.getNoteById(note.id);
-      print("LOCAL LAST SYNC => ${note.lastSyncedAt}");
-      print("LOCAL UPDATED   => ${note.updatedAt}");
+      for (final note in localNotes) {
+        final serverNote = await remoteDataSource.getNoteById(note.id);
+        print("LOCAL LAST SYNC => ${note.lastSyncedAt}");
+        print("LOCAL UPDATED   => ${note.updatedAt}");
 
-      print("SERVER UPDATED  => ${serverNote?.updatedAt}");
+        print("SERVER UPDATED  => ${serverNote?.updatedAt}");
 
-      print(
-        "LOCAL DELETED AFTER SYNC => "
-        "${note.lastSyncedAt != null && note.updatedAt.isAfter(note.lastSyncedAt!)}",
-      );
+        print(
+          "LOCAL DELETED AFTER SYNC => "
+          "${note.lastSyncedAt != null && note.updatedAt.isAfter(note.lastSyncedAt!)}",
+        );
 
-      print(
-        "SERVER CHANGED AFTER SYNC => "
-        "${serverNote != null && note.lastSyncedAt != null && serverNote.updatedAt.isAfter(note.lastSyncedAt!)}",
-      );
-      if (note.isDeleted) {
-        final localDeletedAfterSync =
-            note.lastSyncedAt != null &&
-            note.updatedAt.isAfter(note.lastSyncedAt!);
+        print(
+          "SERVER CHANGED AFTER SYNC => "
+          "${serverNote != null && note.lastSyncedAt != null && serverNote.updatedAt.isAfter(note.lastSyncedAt!)}",
+        );
+        if (note.isDeleted) {
+          final localDeletedAfterSync =
+              note.lastSyncedAt != null &&
+              note.updatedAt.isAfter(note.lastSyncedAt!);
 
-        final serverChangedAfterSync =
-            serverNote != null &&
-            note.lastSyncedAt != null &&
-            serverNote.updatedAt.isAfter(note.lastSyncedAt!);
+          final serverChangedAfterSync =
+              serverNote != null &&
+              note.lastSyncedAt != null &&
+              serverNote.updatedAt.isAfter(note.lastSyncedAt!);
 
-        if (localDeletedAfterSync && serverChangedAfterSync) {
-          print("DELETE VS UPDATE CONFLICT DETECTED");
+          if (localDeletedAfterSync && serverChangedAfterSync) {
+            print("DELETE VS UPDATE CONFLICT DETECTED");
 
-          return ConflictEntity(localNote: note, serverNote: serverNote);
+            return ConflictEntity(localNote: note, serverNote: serverNote);
+          }
+
+          try {
+            await remoteDataSource.deleteNote(note.id);
+
+            continue;
+          } catch (_) {
+            updatedNotes.add(note);
+            continue;
+          }
+        }
+        if (note.syncStatus != SyncStatus.pending) {
+          updatedNotes.add(NoteModel.fromEntity(note));
+          continue;
         }
 
         try {
-          await remoteDataSource.deleteNote(note.id);
+          NoteModel syncedNote;
+          // final serverNote = await remoteDataSource.getNoteById(note.id);
 
-          continue;
-        } catch (_) {
-          updatedNotes.add(note);
-          continue;
+          final localChanged =
+              note.lastSyncedAt != null &&
+              note.updatedAt.isAfter(note.lastSyncedAt!);
+
+          final serverChanged =
+              serverNote != null &&
+              note.lastSyncedAt != null &&
+              serverNote.updatedAt.isAfter(note.lastSyncedAt!);
+
+          /// LOCAL edited, SERVER deleted
+          if (serverNote != null && serverNote.isDeleted && localChanged) {
+            return ConflictEntity(localNote: note, serverNote: serverNote);
+          }
+
+          /// LOCAL deleted, SERVER edited
+          if (note.isDeleted && serverNote != null && serverChanged) {
+            return ConflictEntity(localNote: note, serverNote: serverNote);
+          }
+
+          // server & local edited
+          if (serverNote != null && localChanged && serverChanged) {
+            return ConflictEntity(localNote: note, serverNote: serverNote);
+          }
+
+          if (serverNote == null) {
+            final createdNote = await remoteDataSource.addNote(
+              NoteModel.fromEntity(note),
+            );
+
+            syncedNote = await remoteDataSource.updateNote(
+              createdNote.copyWith(
+                syncStatus: SyncStatus.synced,
+                lastSyncedAt: DateTime.now(),
+              ),
+            );
+          } else {
+            syncedNote = await remoteDataSource.updateNote(
+              NoteModel.fromEntity(note).copyWith(
+                syncStatus: SyncStatus.synced,
+                lastSyncedAt: DateTime.now(),
+              ),
+            );
+          }
+
+          updatedNotes.add(syncedNote);
+        } catch (e) {
+          // print("SYNC FAILED FOR NOTE ${note.id} => $e");
+          throw Exception('No internet connection');
+          // updatedNotes.add(NoteModel.fromEntity(note));
         }
-      }
-      if (note.syncStatus != SyncStatus.pending) {
-        updatedNotes.add(NoteModel.fromEntity(note));
-        continue;
       }
 
       try {
-        NoteModel syncedNote;
-        // final serverNote = await remoteDataSource.getNoteById(note.id);
+        final remoteNotes = await remoteDataSource.getNotes();
 
-        final localChanged =
-            note.lastSyncedAt != null &&
-            note.updatedAt.isAfter(note.lastSyncedAt!);
-
-        final serverChanged =
-            serverNote != null &&
-            note.lastSyncedAt != null &&
-            serverNote.updatedAt.isAfter(note.lastSyncedAt!);
-
-        /// LOCAL edited, SERVER deleted
-        if (serverNote != null && serverNote.isDeleted && localChanged) {
-          return ConflictEntity(localNote: note, serverNote: serverNote);
-        }
-
-        /// LOCAL deleted, SERVER edited
-        if (note.isDeleted && serverNote != null && serverChanged) {
-          return ConflictEntity(localNote: note, serverNote: serverNote);
-        }
-
-        // server & local edited
-        if (serverNote != null && localChanged && serverChanged) {
-          return ConflictEntity(localNote: note, serverNote: serverNote);
-        }
-
-        if (serverNote == null) {
-          final createdNote = await remoteDataSource.addNote(
-            NoteModel.fromEntity(note),
+        for (final remoteNote in remoteNotes) {
+          final exists = updatedNotes.any(
+            (localNote) => localNote.id == remoteNote.id,
           );
 
-          syncedNote = await remoteDataSource.updateNote(
-            createdNote.copyWith(
-              syncStatus: SyncStatus.synced,
-              lastSyncedAt: DateTime.now(),
-            ),
-          );
-        } else {
-          syncedNote = await remoteDataSource.updateNote(
-            NoteModel.fromEntity(note).copyWith(
-              syncStatus: SyncStatus.synced,
-              lastSyncedAt: DateTime.now(),
-            ),
-          );
-        }
+          if (!exists &&
+              !localNotes.any((n) => n.id == remoteNote.id && n.isDeleted)) {
+            try {
+              if (remoteNote.syncStatus != SyncStatus.synced) {
+                final syncedNote = await remoteDataSource.updateNote(
+                  remoteNote.copyWith(
+                    syncStatus: SyncStatus.synced,
+                    lastSyncedAt: remoteNote.lastSyncedAt ?? DateTime.now(),
+                  ),
+                );
+                updatedNotes.add(syncedNote);
+              } else {
+                updatedNotes.add(
+                  remoteNote.copyWith(
+                    syncStatus: SyncStatus.synced,
+                    lastSyncedAt: remoteNote.lastSyncedAt ?? DateTime.now(),
+                  ),
+                );
+              }
+            } catch (e) {
+              // print("REMOTE NOTE SYNC FAILED ${remoteNote.id} => $e");
 
-        updatedNotes.add(syncedNote);
-      } catch (e) {
-        // print("SYNC FAILED FOR NOTE ${note.id} => $e");
-        throw Exception('No internet connection');
-        // updatedNotes.add(NoteModel.fromEntity(note));
-      }
-    }
-
-    try {
-      final remoteNotes = await remoteDataSource.getNotes();
-
-      for (final remoteNote in remoteNotes) {
-        final exists = updatedNotes.any(
-          (localNote) => localNote.id == remoteNote.id,
-        );
-
-        if (!exists &&
-            !localNotes.any((n) => n.id == remoteNote.id && n.isDeleted)) {
-          try {
-            if (remoteNote.syncStatus != SyncStatus.synced) {
-              final syncedNote = await remoteDataSource.updateNote(
-                remoteNote.copyWith(
-                  syncStatus: SyncStatus.synced,
-                  lastSyncedAt: remoteNote.lastSyncedAt ?? DateTime.now(),
-                ),
-              );
-              updatedNotes.add(syncedNote);
-            } else {
-              updatedNotes.add(
-                remoteNote.copyWith(
-                  syncStatus: SyncStatus.synced,
-                  lastSyncedAt: remoteNote.lastSyncedAt ?? DateTime.now(),
-                ),
-              );
+              updatedNotes.add(remoteNote);
             }
-          } catch (e) {
-            // print("REMOTE NOTE SYNC FAILED ${remoteNote.id} => $e");
-
-            updatedNotes.add(remoteNote);
           }
         }
+      } catch (e) {
+        // print('FAILED TO FETCH REMOTE NOTES => $e');
       }
-    } catch (e) {
-      // print('FAILED TO FETCH REMOTE NOTES => $e');
-    }
 
-    await localDataSource.saveNotes(updatedNotes);
-    await localDataSource.saveLastSyncTime();
-    return null;
+      await localDataSource.saveNotes(updatedNotes);
+      await localDataSource.saveLastSyncTime();
+      return null;
+    } catch (e) {
+      throw Exception('Sync failed due to server/network issue: $e');
+    }
   }
 
   @override

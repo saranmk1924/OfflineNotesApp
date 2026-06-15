@@ -94,10 +94,13 @@ class NoteBloc extends Bloc<NoteEvent, NoteState> {
     SyncNotesEvent event,
     Emitter<NoteState> emit,
   ) async {
+    List<NoteEntity> previousNotes =[];
+    try{
     print("SYNC STARTED");
     // get latest snapshot BEFORE sync
     final notes = await getNotes();
     final activeNotes = notes.where((n) => !n.isDeleted).toList();
+    previousNotes = activeNotes;
     emit(NoteSyncing(previousNotes: activeNotes));
     final conflict = await syncNotes();
 
@@ -118,6 +121,9 @@ class NoteBloc extends Bloc<NoteEvent, NoteState> {
     emit(NoteSyncSuccess());
 
     await _emitLoaded(emit);
+    } catch (e) {
+    emit(NoteError("Failed to sync", previousNotes: previousNotes));
+  }
   }
 
   Future<void> _onCheckConflict(

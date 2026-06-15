@@ -49,8 +49,9 @@ class ConflictResolvingState extends NoteState {
 
 class NoteError extends NoteState {
   final String message;
+  final List<NoteEntity> previousNotes;
 
-  const NoteError(this.message);
+  const NoteError(this.message, {required this.previousNotes});
 
   @override
   List<Object?> get props => [message];

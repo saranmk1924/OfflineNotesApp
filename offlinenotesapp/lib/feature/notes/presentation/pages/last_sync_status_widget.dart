@@ -11,30 +11,15 @@ class LastSyncStatusWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<NoteBloc, NoteState>(
       builder: (context, state) {
+        if (state is NoteError) {
+         return syncMessage(message: 'Sync failed');
+        }
         if (state is NoteSyncing) {
-          return const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 26, vertical: 8),
-            child: Row(
-              children: [
-                Icon(Icons.sync, size: 18),
-                SizedBox(width: 8),
-                Text('Syncing...'),
-              ],
-            ),
-          );
+         return syncMessage(message: 'Syncing...');
         }
 
         if (state is ConflictResolvingState || state is ConflictDetectedState) {
-          return const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 26, vertical: 8),
-            child: Row(
-              children: [
-                Icon(Icons.sync, size: 18),
-                SizedBox(width: 8),
-                Text('Resolving Conflict...'),
-              ],
-            ),
-          );
+         return syncMessage(message: 'Resolving Conflict...');
         }
 
         if (state is! NoteLoaded) {
@@ -62,6 +47,19 @@ class LastSyncStatusWidget extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+
+  Widget syncMessage({required String message}) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 26, vertical: 8),
+      child: Row(
+        children: [
+          Icon(Icons.sync, size: 18),
+          SizedBox(width: 8),
+          Text(message),
+        ],
+      ),
     );
   }
 }

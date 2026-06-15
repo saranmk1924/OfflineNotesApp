@@ -80,6 +80,13 @@ class _NotesPageState extends State<NotesPage> with TickerProviderStateMixin {
 
         BlocListener<NoteBloc, NoteState>(
           listener: (context, state) {
+            if (state is NoteError) {
+              AppSnackBar.show(
+                context,
+                message: state.message,
+                icon: Icons.error,
+              );
+            }
             if (state is NoteSyncing) {
               _syncController.repeat();
             }
@@ -330,6 +337,20 @@ class _NotesPageState extends State<NotesPage> with TickerProviderStateMixin {
                         child: CupertinoActivityIndicator(
                           radius: 30,
                           color: AppPalette.purple,
+                        ),
+                      ),
+                    ],
+                  );
+                }
+
+                if (state is NoteError) {
+                  return Column(
+                    children: [
+                      const LastSyncStatusWidget(),
+                      Expanded(
+                        child: NotesListView(
+                          notes: state.previousNotes,
+                          isDelete: true,
                         ),
                       ),
                     ],
