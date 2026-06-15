@@ -87,10 +87,12 @@ class _AddEditNotePageState extends State<AddEditNotePage> {
             TextField(
               style: const TextStyle(color: AppPalette.white),
               controller: titleController,
+              maxLength: 120,
               decoration: InputDecoration(
                 labelText: 'Title',
                 labelStyle: const TextStyle(color: AppPalette.white70),
                 filled: true,
+
                 fillColor: AppPalette.cardBackground,
                 contentPadding: const EdgeInsets.only(
                   left: 10,
@@ -113,6 +115,7 @@ class _AddEditNotePageState extends State<AddEditNotePage> {
             const SizedBox(height: 16),
             Expanded(
               child: TextField(
+                maxLength: 2000,
                 style: const TextStyle(color: AppPalette.white),
                 controller: bodyController,
                 expands: true,

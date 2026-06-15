@@ -62,7 +62,7 @@ class _NotesPageState extends State<NotesPage> with TickerProviderStateMixin {
             if (isConnected) {
               AppSnackBar.show(
                 context,
-                message: 'Back Online - Syncing...',
+                message: 'Back to Online - Syncing...',
                 icon: Icons.wifi,
               );
 
@@ -88,7 +88,7 @@ class _NotesPageState extends State<NotesPage> with TickerProviderStateMixin {
 
               AppSnackBar.show(
                 context,
-                message: 'Sync Successful',
+                message: 'Synced Successfully',
                 icon: Icons.check_circle,
               );
             }
@@ -97,11 +97,6 @@ class _NotesPageState extends State<NotesPage> with TickerProviderStateMixin {
               _syncController.stop();
               _syncController.reset();
 
-              // AppSnackBar.show(
-              //   context,
-              //   message: 'Conflict Detected',
-              //   icon: Icons.warning_amber_rounded,
-              // );
               ConflictDialog().showConflictDialog(
                 context,
                 state.localNote,
