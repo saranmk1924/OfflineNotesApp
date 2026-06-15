@@ -93,6 +93,13 @@ class _NotesPageState extends State<NotesPage> with TickerProviderStateMixin {
                 icon: Icons.check_circle,
               );
             }
+            if (state is ConflictResolvedSuccess) {
+              AppSnackBar.show(
+                context,
+                message: 'Conflict resolved successfully',
+                icon: Icons.check_circle,
+              );
+            }
 
             if (state is ConflictDetectedState) {
               _syncController.stop();

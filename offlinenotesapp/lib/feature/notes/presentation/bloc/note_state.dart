@@ -65,18 +65,15 @@ class NoteSyncSuccess extends NoteState {}
 
 class NoteOffline extends NoteState {}
 
-// class NoteConflict extends NoteState {
-//   final NoteEntity localNote;
-//   final NoteEntity serverNote;
 
-//   const NoteConflict({
-//     required this.localNote,
-//     required this.serverNote,
-//   });
+class ConflictResolvedSuccess extends NoteState {}
 
-//   @override
-//   List<Object?> get props => [
-//         localNote,
-//         serverNote,
-//       ];
-// }
+class ConflictResolvedError extends NoteState {
+  final String message;
+
+  const ConflictResolvedError(this.message);
+
+  @override
+  List<Object?> get props => [message];
+}
+

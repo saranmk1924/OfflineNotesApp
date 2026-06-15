@@ -4,6 +4,7 @@ import 'package:offlinenotesapp/core/common/app_snackbar.dart';
 import 'package:offlinenotesapp/core/constants/app_palette.dart';
 import 'package:offlinenotesapp/feature/notes/presentation/bloc/note_bloc.dart';
 import 'package:offlinenotesapp/feature/notes/presentation/bloc/note_event.dart';
+import 'package:offlinenotesapp/feature/notes/presentation/cubit/connectivity_cubit.dart';
 
 class ConflictDialog {
   void showConflictDialog(
@@ -169,13 +170,20 @@ class ConflictDialog {
                 ),
               ),
               onPressed: () {
+                final isConnected = context.read<ConnectivityCubit>().state;
+
+                if (!isConnected) {
+                  AppSnackBar.show(
+                    context,
+                    message: 'Failed to resolve conflict',
+                    icon: Icons.wifi_off,
+                  );
+                  Navigator.pop(context);
+                  return;
+                }
+
                 context.read<NoteBloc>().add(UseLocalVersionEvent(localNote));
                 Navigator.pop(context);
-                AppSnackBar.show(
-                  context,
-                  message: 'Conflict resolved successfully',
-                  icon: Icons.check_circle,
-                );
               },
               child: Text('Use Local'),
             ),
@@ -191,13 +199,20 @@ class ConflictDialog {
                 ),
               ),
               onPressed: () {
+                final isConnected = context.read<ConnectivityCubit>().state;
+
+                if (!isConnected) {
+                  AppSnackBar.show(
+                    context,
+                    message: 'Failed to resolve conflict',
+                    icon: Icons.wifi_off,
+                  );
+                  Navigator.pop(context);
+                  return;
+                }
+
                 context.read<NoteBloc>().add(UseServerVersionEvent(serverNote));
                 Navigator.pop(context);
-                AppSnackBar.show(
-                  context,
-                  message: 'Conflict resolved successfully',
-                  icon: Icons.check_circle,
-                );
               },
               child: Text('Use Server'),
             ),

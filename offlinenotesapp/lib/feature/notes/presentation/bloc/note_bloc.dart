@@ -83,7 +83,6 @@ class NoteBloc extends Bloc<NoteEvent, NoteState> {
       ),
     );
 
-    
     print("IS DELETED => ${note.isDeleted}");
     print("UPDATED AT => ${note.updatedAt}");
     print("LAST SYNCED => ${note.lastSyncedAt}");
@@ -144,14 +143,25 @@ class NoteBloc extends Bloc<NoteEvent, NoteState> {
     Emitter<NoteState> emit,
   ) async {
     final currentState = state;
+    try {
+      if (currentState is ConflictDetectedState) {
+        emit(ConflictResolvingState(previousNotes: currentState.previousNotes));
+      }
+      print("LOCAL VERSION SELECTED");
+      await useLocalVersion(event.note);
 
-    if (currentState is ConflictDetectedState) {
-      emit(ConflictResolvingState(previousNotes: currentState.previousNotes));
+      await _emitLoaded(emit);
+    } catch (e) {
+     if (currentState is ConflictDetectedState) {
+      emit(
+        ConflictDetectedState(
+          localNote: currentState.localNote,
+          serverNote: currentState.serverNote,
+          previousNotes: currentState.previousNotes,
+        ),
+      );
     }
-    print("LOCAL VERSION SELECTED");
-    await useLocalVersion(event.note);
-
-    await _emitLoaded(emit);
+    }
   }
 
   Future<void> _onUseServerVersion(
@@ -159,14 +169,25 @@ class NoteBloc extends Bloc<NoteEvent, NoteState> {
     Emitter<NoteState> emit,
   ) async {
     final currentState = state;
+    try {
+      if (currentState is ConflictDetectedState) {
+        emit(ConflictResolvingState(previousNotes: currentState.previousNotes));
+      }
+      print("SERVER VERSION SELECTED");
+      await useServerVersion(event.note);
 
+      await _emitLoaded(emit);
+    } catch (e) {
     if (currentState is ConflictDetectedState) {
-      emit(ConflictResolvingState(previousNotes: currentState.previousNotes));
+      emit(
+        ConflictDetectedState(
+          localNote: currentState.localNote,
+          serverNote: currentState.serverNote,
+          previousNotes: currentState.previousNotes,
+        ),
+      );
     }
-    print("SERVER VERSION SELECTED");
-    await useServerVersion(event.note);
-
-    await _emitLoaded(emit);
+    }
   }
 
   //Helper
