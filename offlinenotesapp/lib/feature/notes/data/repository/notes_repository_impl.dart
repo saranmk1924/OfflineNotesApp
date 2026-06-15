@@ -165,6 +165,7 @@ class NotesRepositoryImpl implements NotesRepository {
     }
 
     await localDataSource.saveNotes(updatedNotes);
+    await localDataSource.saveLastSyncTime();
     return null;
   }
 
@@ -214,5 +215,10 @@ class NotesRepositoryImpl implements NotesRepository {
     ).copyWith(syncStatus: SyncStatus.synced, lastSyncedAt: DateTime.now());
 
     await localDataSource.updateNote(syncedNote);
+  }
+
+  @override
+  DateTime? getLastSyncTime() {
+    return localDataSource.getLastSyncTime();
   }
 }

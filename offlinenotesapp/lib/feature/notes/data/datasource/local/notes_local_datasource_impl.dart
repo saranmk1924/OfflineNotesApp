@@ -6,8 +6,9 @@ import 'notes_local_datasource.dart';
 
 class NotesLocalDataSourceImpl implements NotesLocalDataSource {
   final Box notesBox;
+  final Box syncBox;
 
-  NotesLocalDataSourceImpl(this.notesBox);
+  NotesLocalDataSourceImpl(this.notesBox, this.syncBox);
 
   @override
   Future<void> addNote(NoteModel note) async {
@@ -44,4 +45,18 @@ class NotesLocalDataSourceImpl implements NotesLocalDataSource {
       await notesBox.put(note.id, note.toJson());
     }
   }
+
+  @override
+  Future<void> saveLastSyncTime() async {
+    await syncBox.put('lastSyncTime', DateTime.now().toIso8601String());
+  }
+
+  @override
+  DateTime? getLastSyncTime() {
+  final value = syncBox.get('lastSyncTime');
+
+  if (value == null) return null;
+
+  return DateTime.parse(value);
+}
 }

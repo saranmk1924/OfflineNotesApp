@@ -11,6 +11,7 @@ import 'package:offlinenotesapp/feature/notes/presentation/bloc/note_state.dart'
 import 'package:offlinenotesapp/feature/notes/presentation/cubit/connectivity_cubit.dart';
 import 'package:offlinenotesapp/feature/notes/presentation/pages/add_edit_note_page.dart';
 import 'package:offlinenotesapp/feature/notes/presentation/pages/conflict_dialog.dart';
+import 'package:offlinenotesapp/feature/notes/presentation/pages/last_sync_status_widget.dart';
 import 'package:offlinenotesapp/feature/notes/presentation/pages/notes_list_view.dart';
 
 class NotesPage extends StatefulWidget {
@@ -176,8 +177,7 @@ class _NotesPageState extends State<NotesPage> with TickerProviderStateMixin {
                         final state = context.watch<NoteBloc>().state;
 
                         final allNotes = (state is NoteLoaded)
-                            ? state
-                                  .notesRaw // we will add this
+                            ? state.notesRaw
                             : (state is NoteSyncing)
                             ? state.previousNotes
                             : <NoteEntity>[];
@@ -283,7 +283,15 @@ class _NotesPageState extends State<NotesPage> with TickerProviderStateMixin {
 
                   return Stack(
                     children: [
-                      NotesListView(notes: notes, isDelete: false),
+                      Column(
+                        children: [
+                          LastSyncStatusWidget(),
+                          Expanded(
+                            child: NotesListView(notes: notes, isDelete: false),
+                          ),
+                        ],
+                      ),
+                      Container(color: Colors.black38),
                       const Center(
                         child: CupertinoActivityIndicator(
                           radius: 30,
@@ -294,21 +302,80 @@ class _NotesPageState extends State<NotesPage> with TickerProviderStateMixin {
                   );
                 }
 
-                if (state is NoteLoaded) {
-                  if (state.notes.isEmpty) {
-                    return const Center(
-                      child: Text(
-                        'No Notes Yet',
-                        style: TextStyle(
-                          color: AppPalette.white70,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 20,
+                if (state is ConflictResolvingState) {
+                  return Stack(
+                    children: [
+                      Column(
+                        children: [
+                          const LastSyncStatusWidget(),
+                          Expanded(
+                            child: NotesListView(
+                              notes: state.previousNotes,
+                              isDelete: false,
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      Container(color: Colors.black38),
+
+                      const Center(
+                        child: CupertinoActivityIndicator(
+                          radius: 30,
+                          color: AppPalette.purple,
                         ),
                       ),
+                    ],
+                  );
+                }
+
+                if (state is ConflictDetectedState) {
+                  return Column(
+                    children: [
+                      const LastSyncStatusWidget(),
+                      Expanded(
+                        child: NotesListView(
+                          notes: state.previousNotes,
+                          isDelete: false,
+                        ),
+                      ),
+                    ],
+                  );
+                }
+
+                if (state is NoteLoaded) {
+                  if (state.notes.isEmpty) {
+                    return Column(
+                      children: [
+                        LastSyncStatusWidget(),
+                        Expanded(
+                          child: const Center(
+                            child: Text(
+                              'No Notes Yet',
+                              style: TextStyle(
+                                color: AppPalette.white70,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 20,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     );
                   }
 
-                  return NotesListView(notes: state.notes, isDelete: true);
+                  return Column(
+                    children: [
+                      LastSyncStatusWidget(),
+
+                      Expanded(
+                        child: NotesListView(
+                          notes: state.notes,
+                          isDelete: true,
+                        ),
+                      ),
+                    ],
+                  );
                 }
 
                 return const SizedBox.shrink();
@@ -319,7 +386,8 @@ class _NotesPageState extends State<NotesPage> with TickerProviderStateMixin {
               child: BlocBuilder<NoteBloc, NoteState>(
                 builder: (context, state) {
                   return FloatingActionButton(
-                    backgroundColor: state is NoteSyncing
+                    backgroundColor:
+                        state is NoteSyncing || state is ConflictResolvingState
                         ? AppPalette.white24
                         : AppPalette.purple,
                     foregroundColor: AppPalette.white,
@@ -327,7 +395,8 @@ class _NotesPageState extends State<NotesPage> with TickerProviderStateMixin {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(18),
                     ),
-                    onPressed: state is NoteSyncing
+                    onPressed:
+                        state is NoteSyncing || state is ConflictResolvingState
                         ? null
                         : () {
                             Navigator.push(

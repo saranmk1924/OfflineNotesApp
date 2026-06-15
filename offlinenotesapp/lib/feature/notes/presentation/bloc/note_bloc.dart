@@ -4,6 +4,7 @@ import 'package:offlinenotesapp/feature/notes/domain/entities/sync_status.dart';
 import 'package:offlinenotesapp/feature/notes/domain/usecase/add_note_usecase.dart';
 import 'package:offlinenotesapp/feature/notes/domain/usecase/check_conflict_usecase.dart';
 import 'package:offlinenotesapp/feature/notes/domain/usecase/delete_note_usecase.dart';
+import 'package:offlinenotesapp/feature/notes/domain/usecase/get_last_sync_time_usecase.dart';
 import 'package:offlinenotesapp/feature/notes/domain/usecase/get_notes_usecase.dart';
 import 'package:offlinenotesapp/feature/notes/domain/usecase/sync_notes_usecase.dart';
 import 'package:offlinenotesapp/feature/notes/domain/usecase/update_note_usecase.dart';
@@ -21,6 +22,7 @@ class NoteBloc extends Bloc<NoteEvent, NoteState> {
   final CheckConflictUsecase checkConflict;
   final UseLocalVersionUsecase useLocalVersion;
   final UseServerVersionUsecase useServerVersion;
+  final GetLastSyncTimeUsecase getLastSyncTime;
 
   NoteBloc({
     required this.addNote,
@@ -31,6 +33,7 @@ class NoteBloc extends Bloc<NoteEvent, NoteState> {
     required this.checkConflict,
     required this.useLocalVersion,
     required this.useServerVersion,
+    required this.getLastSyncTime,
   }) : super(NoteInitial()) {
     on<LoadNotesEvent>(_onLoadNotes);
     on<AddNoteEvent>(_onAddNote);
@@ -75,8 +78,9 @@ class NoteBloc extends Bloc<NoteEvent, NoteState> {
     await updateNote(
       note.copyWith(
         isDeleted: true,
-        syncStatus: SyncStatus.pending, // keep explicit
+        syncStatus: SyncStatus.pending,
         updatedAt: DateTime.now(),
+        lastSyncedAt: DateTime.now(),
       ),
     );
 
@@ -100,10 +104,14 @@ class NoteBloc extends Bloc<NoteEvent, NoteState> {
         ConflictDetectedState(
           localNote: conflict.localNote,
           serverNote: conflict.serverNote,
+          previousNotes: activeNotes,
         ),
       );
       return;
     }
+
+    await _markAllSynced();
+
     emit(NoteSyncSuccess());
 
     await _emitLoaded(emit);
@@ -116,8 +124,13 @@ class NoteBloc extends Bloc<NoteEvent, NoteState> {
     final conflict = await checkConflict();
 
     if (conflict != null) {
+      final notes = await getNotes();
       emit(
-        ConflictDetectedState(localNote: conflict.$1, serverNote: conflict.$2),
+        ConflictDetectedState(
+          localNote: conflict.$1,
+          serverNote: conflict.$2,
+          previousNotes: notes,
+        ),
       );
     }
   }
@@ -126,24 +139,30 @@ class NoteBloc extends Bloc<NoteEvent, NoteState> {
     UseLocalVersionEvent event,
     Emitter<NoteState> emit,
   ) async {
+    final currentState = state;
+
+    if (currentState is ConflictDetectedState) {
+      emit(ConflictResolvingState(previousNotes: currentState.previousNotes));
+    }
     print("LOCAL VERSION SELECTED");
     await useLocalVersion(event.note);
 
-    emit(NoteSyncSuccess());
-
-    add(LoadNotesEvent());
+    await _emitLoaded(emit);
   }
 
   Future<void> _onUseServerVersion(
     UseServerVersionEvent event,
     Emitter<NoteState> emit,
   ) async {
+    final currentState = state;
+
+    if (currentState is ConflictDetectedState) {
+      emit(ConflictResolvingState(previousNotes: currentState.previousNotes));
+    }
     print("SERVER VERSION SELECTED");
     await useServerVersion(event.note);
 
-    emit(NoteSyncSuccess());
-
-    add(LoadNotesEvent());
+    await _emitLoaded(emit);
   }
 
   //Helper
@@ -153,6 +172,21 @@ class NoteBloc extends Bloc<NoteEvent, NoteState> {
 
   Future<void> _emitLoaded(Emitter<NoteState> emit) async {
     final notes = await getNotes();
-    emit(NoteLoaded(_active(notes), notes));
+    emit(NoteLoaded(_active(notes), notes, lastSyncTime: getLastSyncTime()));
+  }
+
+  Future<void> _markAllSynced() async {
+    final notes = await getNotes();
+
+    for (final note in notes) {
+      if (note.syncStatus != SyncStatus.synced) {
+        await updateNote(
+          note.copyWith(
+            syncStatus: SyncStatus.synced,
+            lastSyncedAt: DateTime.now(),
+          ),
+        );
+      }
+    }
   }
 }

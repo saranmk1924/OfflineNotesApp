@@ -10,4 +10,8 @@ abstract interface class NotesLocalDataSource {
   Future<List<NoteModel>> getNotes();
 
   Future<void> saveNotes(List<NoteModel> notes);
+
+  Future<void> saveLastSyncTime();
+  
+  DateTime? getLastSyncTime();
 }

@@ -107,7 +107,8 @@ class _AddEditNotePageState extends State<AddEditNotePage> {
                   borderRadius: BorderRadius.circular(16),
                   borderSide: const BorderSide(color: AppPalette.white24),
                 ),
-                focusedBorder: const OutlineInputBorder(
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
                   borderSide: BorderSide(color: AppPalette.purple, width: 2),
                 ),
               ),
@@ -141,7 +142,8 @@ class _AddEditNotePageState extends State<AddEditNotePage> {
                     borderRadius: BorderRadius.circular(16),
                     borderSide: const BorderSide(color: AppPalette.white24),
                   ),
-                  focusedBorder: const OutlineInputBorder(
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
                     borderSide: BorderSide(color: AppPalette.purple, width: 2),
                   ),
                 ),

@@ -15,28 +15,36 @@ class NoteLoading extends NoteState {}
 
 class NoteLoaded extends NoteState {
   final List<NoteEntity> notes;
-  final List<NoteEntity> notesRaw; 
+  final List<NoteEntity> notesRaw;
+  final DateTime? lastSyncTime;
 
-  const NoteLoaded(this.notes, this.notesRaw);
+  const NoteLoaded(this.notes, this.notesRaw, {this.lastSyncTime});
 
   @override
-  List<Object?> get props => [notes,notesRaw];
+  List<Object?> get props => [notes, notesRaw, lastSyncTime];
 }
 
 class ConflictDetectedState extends NoteState {
   final NoteEntity localNote;
   final NoteEntity serverNote;
-
+  final List<NoteEntity> previousNotes;
   const ConflictDetectedState({
     required this.localNote,
     required this.serverNote,
+    required this.previousNotes,
   });
 
   @override
-  List<Object?> get props => [
-        localNote,
-        serverNote,
-      ];
+  List<Object?> get props => [localNote, serverNote,previousNotes];
+}
+
+class ConflictResolvingState extends NoteState {
+  final List<NoteEntity> previousNotes;
+
+  const ConflictResolvingState({required this.previousNotes});
+
+  @override
+  List<Object?> get props => [previousNotes];
 }
 
 class NoteError extends NoteState {

@@ -17,4 +17,6 @@ abstract interface class NotesRepository {
   Future<void> useLocalVersion(NoteEntity localNote);
 
   Future<void> useServerVersion(NoteEntity serverNote);
+
+  DateTime? getLastSyncTime();
 }

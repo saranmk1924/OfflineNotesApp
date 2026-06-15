@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:offlinenotesapp/core/common/app_snackbar.dart';
 import 'package:offlinenotesapp/core/constants/app_palette.dart';
 import 'package:offlinenotesapp/feature/notes/presentation/bloc/note_bloc.dart';
 import 'package:offlinenotesapp/feature/notes/presentation/bloc/note_event.dart';
@@ -135,8 +136,12 @@ class ConflictDialog {
               ),
               onPressed: () {
                 context.read<NoteBloc>().add(UseLocalVersionEvent(localNote));
-
                 Navigator.pop(context);
+                AppSnackBar.show(
+                  context,
+                  message: 'Conflict resolved successfully',
+                  icon: Icons.check_circle,
+                );
               },
               child: const Text(
                 'Use Local',
@@ -152,8 +157,12 @@ class ConflictDialog {
               ),
               onPressed: () {
                 context.read<NoteBloc>().add(UseServerVersionEvent(serverNote));
-
                 Navigator.pop(context);
+                AppSnackBar.show(
+                  context,
+                  message: 'Conflict resolved successfully',
+                  icon: Icons.check_circle,
+                );
               },
               child: const Text(
                 'Use Server',

@@ -8,6 +8,7 @@ import 'package:offlinenotesapp/feature/notes/data/datasource/remote/notes_remot
 import 'package:offlinenotesapp/feature/notes/domain/usecase/add_note_usecase.dart';
 import 'package:offlinenotesapp/feature/notes/domain/usecase/check_conflict_usecase.dart';
 import 'package:offlinenotesapp/feature/notes/domain/usecase/delete_note_usecase.dart';
+import 'package:offlinenotesapp/feature/notes/domain/usecase/get_last_sync_time_usecase.dart';
 import 'package:offlinenotesapp/feature/notes/domain/usecase/get_notes_usecase.dart';
 import 'package:offlinenotesapp/feature/notes/domain/usecase/sync_notes_usecase.dart';
 import 'package:offlinenotesapp/feature/notes/domain/usecase/update_note_usecase.dart';
@@ -24,12 +25,12 @@ import '../../feature/notes/domain/repository/notes_repository.dart';
 //service locator
 final sl = GetIt.instance;
 
-Future<void> initDependencies(Box notesBox) async {
+Future<void> initDependencies(Box notesBox, Box appBox) async {
   sl.registerLazySingleton(DioClient.new);
 
   /// Datasource
   sl.registerLazySingleton<NotesLocalDataSource>(
-    () => NotesLocalDataSourceImpl(notesBox),
+    () => NotesLocalDataSourceImpl(notesBox,appBox),
   );
 
   sl.registerLazySingleton<NotesRemoteDataSource>(
@@ -52,6 +53,8 @@ Future<void> initDependencies(Box notesBox) async {
 
   sl.registerLazySingleton(() => SyncNotesUsecase(sl()));
 
+  sl.registerLazySingleton(() => GetLastSyncTimeUsecase(sl()));
+
   sl.registerFactory(
     () => NoteBloc(
       addNote: sl(),
@@ -62,6 +65,7 @@ Future<void> initDependencies(Box notesBox) async {
       checkConflict: sl(),
       useLocalVersion: sl(),
       useServerVersion: sl(),
+      getLastSyncTime: sl(),
     ),
   );
 

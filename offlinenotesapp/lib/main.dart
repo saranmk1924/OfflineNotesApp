@@ -16,8 +16,9 @@ Future<void> main() async {
   await Hive.initFlutter();
 
   final notesBox = await Hive.openBox(HiveConstants.notesBox);
+  final appBox = await Hive.openBox(HiveConstants.appBox);
 
-  await initDependencies(notesBox);
+  await initDependencies(notesBox,appBox);
 
   runApp(const OfflineNotesApp());
 }
