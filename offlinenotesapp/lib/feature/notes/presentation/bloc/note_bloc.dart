@@ -150,17 +150,19 @@ class NoteBloc extends Bloc<NoteEvent, NoteState> {
       print("LOCAL VERSION SELECTED");
       await useLocalVersion(event.note);
 
+      emit(NoteSyncSuccess());
+
       await _emitLoaded(emit);
     } catch (e) {
-     if (currentState is ConflictDetectedState) {
-      emit(
-        ConflictDetectedState(
-          localNote: currentState.localNote,
-          serverNote: currentState.serverNote,
-          previousNotes: currentState.previousNotes,
-        ),
-      );
-    }
+      if (currentState is ConflictDetectedState) {
+        emit(
+          ConflictDetectedState(
+            localNote: currentState.localNote,
+            serverNote: currentState.serverNote,
+            previousNotes: currentState.previousNotes,
+          ),
+        );
+      }
     }
   }
 
@@ -176,17 +178,19 @@ class NoteBloc extends Bloc<NoteEvent, NoteState> {
       print("SERVER VERSION SELECTED");
       await useServerVersion(event.note);
 
+      emit(NoteSyncSuccess());
+
       await _emitLoaded(emit);
     } catch (e) {
-    if (currentState is ConflictDetectedState) {
-      emit(
-        ConflictDetectedState(
-          localNote: currentState.localNote,
-          serverNote: currentState.serverNote,
-          previousNotes: currentState.previousNotes,
-        ),
-      );
-    }
+      if (currentState is ConflictDetectedState) {
+        emit(
+          ConflictDetectedState(
+            localNote: currentState.localNote,
+            serverNote: currentState.serverNote,
+            previousNotes: currentState.previousNotes,
+          ),
+        );
+      }
     }
   }
 
