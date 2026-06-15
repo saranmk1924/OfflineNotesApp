@@ -12,10 +12,6 @@ abstract interface class NotesRepository {
 
   Future<ConflictEntity?> syncNotes();
 
-  Future<void> resolveWithLocal(NoteEntity note);
-
-  Future<void> resolveWithServer(NoteEntity note);
-
   Future<(NoteEntity, NoteEntity)?> checkConflict();
 
   Future<void> useLocalVersion(NoteEntity localNote);

@@ -1,4 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:offlinenotesapp/feature/notes/domain/entities/note_entity.dart';
+import 'package:offlinenotesapp/feature/notes/domain/entities/sync_status.dart';
 import 'package:offlinenotesapp/feature/notes/domain/usecase/add_note_usecase.dart';
 import 'package:offlinenotesapp/feature/notes/domain/usecase/check_conflict_usecase.dart';
 import 'package:offlinenotesapp/feature/notes/domain/usecase/delete_note_usecase.dart';
@@ -46,42 +48,54 @@ class NoteBloc extends Bloc<NoteEvent, NoteState> {
   ) async {
     emit(NoteLoading());
 
-    final notes = await getNotes();
-
-    emit(NoteLoaded(notes));
+    await _emitLoaded(emit);
   }
 
   Future<void> _onAddNote(AddNoteEvent event, Emitter<NoteState> emit) async {
-    await addNote(event.note);
-
-    add(LoadNotesEvent());
+    await addNote(event.note.copyWith(syncStatus: SyncStatus.pending));
+    await _emitLoaded(emit);
   }
 
   Future<void> _onUpdateNote(
     UpdateNoteEvent event,
     Emitter<NoteState> emit,
   ) async {
-    await updateNote(event.note);
+    await updateNote(event.note.copyWith(syncStatus: SyncStatus.pending));
 
-    add(LoadNotesEvent());
+    await _emitLoaded(emit);
   }
 
   Future<void> _onDeleteNote(
     DeleteNoteEvent event,
     Emitter<NoteState> emit,
   ) async {
-    await deleteNote(event.noteId);
+    final List<NoteEntity> notes = await getNotes();
+    final NoteEntity note = notes.firstWhere((n) => n.id == event.noteId);
 
-    add(LoadNotesEvent());
+    await updateNote(
+      note.copyWith(
+        isDeleted: true,
+        syncStatus: SyncStatus.pending, // keep explicit
+        updatedAt: DateTime.now(),
+      ),
+    );
+
+    await _emitLoaded(emit);
   }
 
   Future<void> _onSyncNotes(
     SyncNotesEvent event,
     Emitter<NoteState> emit,
   ) async {
+    print("SYNC STARTED");
+    // get latest snapshot BEFORE sync
+    final notes = await getNotes();
+    final activeNotes = notes.where((n) => !n.isDeleted).toList();
+    emit(NoteSyncing(previousNotes: activeNotes));
     final conflict = await syncNotes();
 
     if (conflict != null) {
+      print("CONFLICT STATE EMITTED");
       emit(
         ConflictDetectedState(
           localNote: conflict.localNote,
@@ -90,8 +104,9 @@ class NoteBloc extends Bloc<NoteEvent, NoteState> {
       );
       return;
     }
+    emit(NoteSyncSuccess());
 
-    add(LoadNotesEvent());
+    await _emitLoaded(emit);
   }
 
   Future<void> _onCheckConflict(
@@ -101,7 +116,9 @@ class NoteBloc extends Bloc<NoteEvent, NoteState> {
     final conflict = await checkConflict();
 
     if (conflict != null) {
-      emit(NoteConflict(localNote: conflict.$1, serverNote: conflict.$2));
+      emit(
+        ConflictDetectedState(localNote: conflict.$1, serverNote: conflict.$2),
+      );
     }
   }
 
@@ -109,7 +126,10 @@ class NoteBloc extends Bloc<NoteEvent, NoteState> {
     UseLocalVersionEvent event,
     Emitter<NoteState> emit,
   ) async {
+    print("LOCAL VERSION SELECTED");
     await useLocalVersion(event.note);
+
+    emit(NoteSyncSuccess());
 
     add(LoadNotesEvent());
   }
@@ -118,8 +138,21 @@ class NoteBloc extends Bloc<NoteEvent, NoteState> {
     UseServerVersionEvent event,
     Emitter<NoteState> emit,
   ) async {
+    print("SERVER VERSION SELECTED");
     await useServerVersion(event.note);
 
+    emit(NoteSyncSuccess());
+
     add(LoadNotesEvent());
+  }
+
+  //Helper
+  List<NoteEntity> _active(List<NoteEntity> notes) {
+    return notes.where((n) => !n.isDeleted).toList();
+  }
+
+  Future<void> _emitLoaded(Emitter<NoteState> emit) async {
+    final notes = await getNotes();
+    emit(NoteLoaded(_active(notes), notes));
   }
 }

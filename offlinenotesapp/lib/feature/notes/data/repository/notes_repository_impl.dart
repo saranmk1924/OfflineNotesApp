@@ -25,12 +25,25 @@ class NotesRepositoryImpl implements NotesRepository {
 
   @override
   Future<void> deleteNote(String id) async {
-    await localDataSource.deleteNote(id);
+    // await localDataSource.deleteNote(id);
+    final notes = await localDataSource.getNotes();
+
+    final note = notes.firstWhere((n) => n.id == id);
+
+    await localDataSource.updateNote(
+      note.copyWith(
+        isDeleted: true,
+        syncStatus: SyncStatus.pending,
+        updatedAt: DateTime.now(),
+      ),
+    );
   }
 
   @override
   Future<List<NoteEntity>> getNotes() async {
     return await localDataSource.getNotes();
+
+    // return notes.where((e) => !e.isDeleted).toList();
   }
 
   @override
@@ -47,6 +60,16 @@ class NotesRepositoryImpl implements NotesRepository {
     final updatedNotes = <NoteModel>[];
 
     for (final note in localNotes) {
+      if (note.isDeleted) {
+        try {
+          await remoteDataSource.deleteNote(note.id);
+
+          continue;
+        } catch (_) {
+          updatedNotes.add(note);
+          continue;
+        }
+      }
       if (note.syncStatus != SyncStatus.pending) {
         updatedNotes.add(NoteModel.fromEntity(note));
         continue;
@@ -55,6 +78,18 @@ class NotesRepositoryImpl implements NotesRepository {
       try {
         NoteModel syncedNote;
         final serverNote = await remoteDataSource.getNoteById(note.id);
+        print("LOCAL UPDATED => ${note.updatedAt}");
+        print("LOCAL LASTSYNC => ${note.lastSyncedAt}");
+
+        print("SERVER UPDATED => ${serverNote?.updatedAt}");
+
+        print(
+          "LOCAL CHANGED => ${note.lastSyncedAt != null && note.updatedAt.isAfter(note.lastSyncedAt!)}",
+        );
+
+        print(
+          "SERVER CHANGED => ${serverNote != null && note.lastSyncedAt != null && serverNote.updatedAt.isAfter(note.lastSyncedAt!)}",
+        );
         if (serverNote != null &&
             note.lastSyncedAt != null &&
             note.updatedAt.isAfter(note.lastSyncedAt!) &&
@@ -86,8 +121,8 @@ class NotesRepositoryImpl implements NotesRepository {
         updatedNotes.add(syncedNote);
       } catch (e) {
         // print("SYNC FAILED FOR NOTE ${note.id} => $e");
-
-        updatedNotes.add(NoteModel.fromEntity(note));
+        throw Exception('No internet connection');
+        // updatedNotes.add(NoteModel.fromEntity(note));
       }
     }
 
@@ -99,7 +134,8 @@ class NotesRepositoryImpl implements NotesRepository {
           (localNote) => localNote.id == remoteNote.id,
         );
 
-        if (!exists) {
+        if (!exists &&
+            !localNotes.any((n) => n.id == remoteNote.id && n.isDeleted)) {
           try {
             if (remoteNote.syncStatus != SyncStatus.synced) {
               final syncedNote = await remoteDataSource.updateNote(
@@ -130,26 +166,6 @@ class NotesRepositoryImpl implements NotesRepository {
 
     await localDataSource.saveNotes(updatedNotes);
     return null;
-  }
-
-  @override
-  Future<void> resolveWithLocal(NoteEntity note) async {
-    final syncedNote = NoteModel.fromEntity(
-      note,
-    ).copyWith(syncStatus: SyncStatus.synced, lastSyncedAt: DateTime.now());
-
-    await remoteDataSource.updateNote(syncedNote);
-
-    await localDataSource.updateNote(syncedNote);
-  }
-
-  @override
-  Future<void> resolveWithServer(NoteEntity note) async {
-    final syncedNote = NoteModel.fromEntity(
-      note,
-    ).copyWith(syncStatus: SyncStatus.synced, lastSyncedAt: DateTime.now());
-
-    await localDataSource.updateNote(syncedNote);
   }
 
   @override

@@ -10,6 +10,7 @@ import 'package:offlinenotesapp/feature/notes/presentation/cubit/connectivity_cu
 import 'package:offlinenotesapp/feature/notes/presentation/pages/notes_page.dart';
 
 Future<void> main() async {
+  print("Current time: ${DateTime.now().toUtc().toIso8601String()}");
   WidgetsFlutterBinding.ensureInitialized();
 
   await Hive.initFlutter();
@@ -17,18 +18,6 @@ Future<void> main() async {
   final notesBox = await Hive.openBox(HiveConstants.notesBox);
 
   await initDependencies(notesBox);
-
-  //   //testing
-
-  //   final remoteDatasource =
-  //     sl<NotesRemoteDataSource>();
-
-  // final notes =
-  //     await remoteDatasource.getNotes();
-
-  // debugPrint(
-  //   'SERVER NOTES COUNT : ${notes.length}',
-  // );
 
   runApp(const OfflineNotesApp());
 }
@@ -54,3 +43,17 @@ class OfflineNotesApp extends StatelessWidget {
     );
   }
 }
+
+
+
+  //   //testing
+
+  //   final remoteDatasource =
+  //     sl<NotesRemoteDataSource>();
+
+  // final notes =
+  //     await remoteDatasource.getNotes();
+
+  // debugPrint(
+  //   'SERVER NOTES COUNT : ${notes.length}',
+  // );

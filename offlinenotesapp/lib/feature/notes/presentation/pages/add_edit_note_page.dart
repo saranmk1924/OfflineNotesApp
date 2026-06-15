@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:offlinenotesapp/core/constants/app_palette.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../domain/entities/note_entity.dart';
@@ -10,10 +11,7 @@ import '../bloc/note_event.dart';
 class AddEditNotePage extends StatefulWidget {
   final NoteEntity? note;
 
-  const AddEditNotePage({
-    super.key,
-    this.note,
-  });
+  const AddEditNotePage({super.key, this.note});
 
   @override
   State<AddEditNotePage> createState() => _AddEditNotePageState();
@@ -29,13 +27,9 @@ class _AddEditNotePageState extends State<AddEditNotePage> {
   void initState() {
     super.initState();
 
-    titleController = TextEditingController(
-      text: widget.note?.title ?? '',
-    );
+    titleController = TextEditingController(text: widget.note?.title ?? '');
 
-    bodyController = TextEditingController(
-      text: widget.note?.body ?? '',
-    );
+    bodyController = TextEditingController(text: widget.note?.body ?? '');
   }
 
   @override
@@ -60,12 +54,11 @@ class _AddEditNotePageState extends State<AddEditNotePage> {
         body: body,
         updatedAt: DateTime.now(),
         syncStatus: SyncStatus.pending,
-        isDeleted: false, lastSyncedAt: widget.note?.lastSyncedAt,
+        isDeleted: false,
+        lastSyncedAt: widget.note?.lastSyncedAt,
       );
 
-      context.read<NoteBloc>().add(
-            UpdateNoteEvent(updatedNote),
-          );
+      context.read<NoteBloc>().add(UpdateNoteEvent(updatedNote));
     } else {
       final note = NoteEntity(
         id: const Uuid().v4(),
@@ -73,12 +66,11 @@ class _AddEditNotePageState extends State<AddEditNotePage> {
         body: body,
         updatedAt: DateTime.now(),
         syncStatus: SyncStatus.pending,
-        isDeleted: false, lastSyncedAt: null,
+        isDeleted: false,
+        lastSyncedAt: null,
       );
 
-      context.read<NoteBloc>().add(
-            AddNoteEvent(note),
-          );
+      context.read<NoteBloc>().add(AddNoteEvent(note));
     }
 
     Navigator.pop(context);
@@ -87,36 +79,87 @@ class _AddEditNotePageState extends State<AddEditNotePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          isEdit ? 'Edit Note' : 'Add Note',
-        ),
-      ),
+      appBar: AppBar(title: Text(isEdit ? 'Edit Note' : 'Add Note')),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
             TextField(
+              style: const TextStyle(color: AppPalette.white),
               controller: titleController,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: 'Title',
+                labelStyle: const TextStyle(color: AppPalette.white70),
+                filled: true,
+                fillColor: AppPalette.cardBackground,
+                contentPadding: const EdgeInsets.only(
+                  left: 10,
+                  right: 0,
+                  top: 12,
+                  bottom: 12,
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: const BorderSide(color: AppPalette.white24),
+                ),
+                focusedBorder: const OutlineInputBorder(
+                  borderSide: BorderSide(color: AppPalette.purple, width: 2),
+                ),
               ),
             ),
             const SizedBox(height: 16),
-            TextField(
-              controller: bodyController,
-              maxLines: 8,
-              decoration: const InputDecoration(
-                labelText: 'Body',
+            Expanded(
+              child: TextField(
+                style: const TextStyle(color: AppPalette.white),
+                controller: bodyController,
+                expands: true,
+                maxLines: null,
+                minLines: null,
+                textAlignVertical: TextAlignVertical.top,
+                decoration: InputDecoration(
+                  labelText: 'Body',
+                  alignLabelWithHint: true,
+                  labelStyle: const TextStyle(color: AppPalette.white70),
+                  filled: true,
+                  fillColor: AppPalette.cardBackground,
+                  contentPadding: const EdgeInsets.only(
+                    left: 10,
+                    right: 0,
+                    top: 12,
+                    bottom: 12,
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: const BorderSide(color: AppPalette.white24),
+                  ),
+                  focusedBorder: const OutlineInputBorder(
+                    borderSide: BorderSide(color: AppPalette.purple, width: 2),
+                  ),
+                ),
               ),
             ),
             const SizedBox(height: 24),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppPalette.purple,
+                  foregroundColor: AppPalette.white,
+                  minimumSize: const Size(double.infinity, 56),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
                 onPressed: saveNote,
                 child: Text(
                   isEdit ? 'Update' : 'Save',
+                  style: TextStyle(fontSize: 18),
                 ),
               ),
             ),

@@ -29,6 +29,26 @@ class NoteEntity extends Equatable {
     updatedAt,
     syncStatus,
     isDeleted,
-    lastSyncedAt
+    lastSyncedAt,
   ];
+
+  NoteEntity copyWith({
+    String? id,
+    String? title,
+    String? body,
+    DateTime? updatedAt,
+    SyncStatus? syncStatus,
+    bool? isDeleted,
+    DateTime? lastSyncedAt,
+  }) {
+    return NoteEntity(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      body: body ?? this.body,
+      isDeleted: isDeleted ?? this.isDeleted,
+      syncStatus: syncStatus ?? this.syncStatus,
+      updatedAt: updatedAt ?? this.updatedAt,
+      lastSyncedAt: lastSyncedAt ?? this.lastSyncedAt
+    );
+  }
 }
