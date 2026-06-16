@@ -18,6 +18,10 @@ Overall, this project represents a production-ready offline-first notes applicat
 
 ## Screenshots
 
+## Demo Video
+
+[Download Demo Video](offlinenotesapp/assets/videos/demo_clip.mp4)
+
 ### Syncing
 
 ![Syncing](offlinenotesapp/assets/screenshots/syncing_1.jpeg)
