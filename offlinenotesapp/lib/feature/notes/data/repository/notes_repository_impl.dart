@@ -109,7 +109,19 @@ class NotesRepositoryImpl implements NotesRepository {
 
         /// Skip already synced notes.
         if (note.syncStatus != SyncStatus.pending) {
-          updatedNotes.add(NoteModel.fromEntity(note));
+          if (serverNote != null &&
+              note.lastSyncedAt != null &&
+              serverNote.updatedAt.isAfter(note.lastSyncedAt!)) {
+            updatedNotes.add(
+              serverNote.copyWith(
+                syncStatus: SyncStatus.synced,
+                lastSyncedAt: DateTime.now(),
+              ),
+            );
+          } else {
+            updatedNotes.add(NoteModel.fromEntity(note));
+          }
+
           continue;
         }
 
@@ -172,12 +184,13 @@ class NotesRepositoryImpl implements NotesRepository {
         final remoteNotes = await remoteDataSource.getNotes();
 
         for (final remoteNote in remoteNotes) {
-          final exists = updatedNotes.any(
-            (localNote) => localNote.id == remoteNote.id,
-          );
+          // final exists = updatedNotes.any(
+          //   (localNote) => localNote.id == remoteNote.id,
+          // );
 
-          if (!exists &&
-              !localNotes.any((n) => n.id == remoteNote.id && n.isDeleted)) {
+          final localNote = localNotes.where((n) => n.id == remoteNote.id);
+
+          if (localNote.isEmpty) {
             try {
               if (remoteNote.syncStatus != SyncStatus.synced) {
                 final syncedNote = await remoteDataSource.updateNote(
@@ -197,6 +210,27 @@ class NotesRepositoryImpl implements NotesRepository {
               }
             } catch (e) {
               updatedNotes.add(remoteNote);
+            }
+          } else {
+            final note = localNote.first;
+
+            final localChanged =
+                note.lastSyncedAt != null &&
+                note.updatedAt.isAfter(note.lastSyncedAt!);
+
+            final serverChanged =
+                note.lastSyncedAt != null &&
+                remoteNote.updatedAt.isAfter(note.lastSyncedAt!);
+
+            if (!localChanged && serverChanged) {
+              updatedNotes.removeWhere((n) => n.id == remoteNote.id);
+
+              updatedNotes.add(
+                remoteNote.copyWith(
+                  syncStatus: SyncStatus.synced,
+                  lastSyncedAt: DateTime.now(),
+                ),
+              );
             }
           }
         }
