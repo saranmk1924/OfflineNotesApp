@@ -69,3 +69,13 @@ Overall, this project represents a production-ready offline-first notes applicat
 ### Delete note
 
 ![Delete note](offlinenotesapp/assets/screenshots/delete_note.jpeg)
+
+## Responsiveness
+
+### Tablet view
+
+![Tablet view](offlinenotesapp/assets/screenshots/tablet_view.png)
+
+### Desktop view
+
+![Desktop view](offlinenotesapp/assets/screenshots/desktop_view.png)
