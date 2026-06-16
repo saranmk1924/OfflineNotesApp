@@ -6,6 +6,10 @@ import 'package:offlinenotesapp/feature/notes/presentation/bloc/note_state.dart'
 import 'package:offlinenotesapp/feature/notes/presentation/widgets/last_sync_status_widget.dart';
 import 'package:offlinenotesapp/feature/notes/presentation/widgets/notes_list_view.dart';
 
+/// UI shown while a conflict resolution operation is in progress.
+///
+/// Displays the previous notes list with a loading overlay to indicate
+/// that the app is processing conflict resolution.
 class ConflictResolvingView extends StatelessWidget {
   final ConflictResolvingState state;
   const ConflictResolvingView({super.key, required this.state});
@@ -35,8 +39,10 @@ class ConflictResolvingView extends StatelessWidget {
           ],
         ),
 
+        /// Dimmed overlay to block interaction
         Container(color: AppPalette.loaderShade),
 
+        /// Center loading indicator during conflict resolution
         const Center(
           child: CupertinoActivityIndicator(
             radius: 30,

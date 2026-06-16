@@ -11,7 +11,14 @@ import 'package:offlinenotesapp/feature/notes/presentation/widgets/conflict_dial
 import 'package:offlinenotesapp/feature/notes/presentation/widgets/notes_app_bar.dart';
 import 'package:offlinenotesapp/feature/notes/presentation/widgets/notes_body.dart';
 
+/// Main page that displays the list of notes and handles syncing,
+/// connectivity changes, and conflict resolution.
+///
+/// This page listens to:
+/// - Network connectivity changes
+/// - NoteBloc state changes (sync, errors, conflicts)
 class NotesPage extends StatefulWidget {
+  /// Creates the NotesPage.
   const NotesPage({super.key});
 
   @override
@@ -19,11 +26,17 @@ class NotesPage extends StatefulWidget {
 }
 
 class _NotesPageState extends State<NotesPage> with TickerProviderStateMixin {
+  /// Controls sync animation (rotation/loading indicator).
   late final AnimationController _syncController;
+
+  /// Controls pulsing animation for UI elements.
   late final AnimationController _pulseController;
+
+  /// Tween animation for pulsing effect.
   late final Animation<double> _pulseAnimation;
 
   @override
+  /// Initializes animation controllers and pulse animation.
   void initState() {
     super.initState();
 
@@ -45,6 +58,7 @@ class _NotesPageState extends State<NotesPage> with TickerProviderStateMixin {
   }
 
   @override
+  /// Disposes animation controllers to free resources.
   void dispose() {
     _syncController.dispose();
     _pulseController.dispose();
@@ -52,9 +66,11 @@ class _NotesPageState extends State<NotesPage> with TickerProviderStateMixin {
   }
 
   @override
+  /// Builds the Notes UI with connectivity and sync listeners.
   Widget build(BuildContext context) {
     return MultiBlocListener(
       listeners: [
+        /// Listens for network connectivity changes.
         BlocListener<ConnectivityCubit, bool>(
           listener: (context, isConnected) {
             if (isConnected) {
@@ -75,6 +91,7 @@ class _NotesPageState extends State<NotesPage> with TickerProviderStateMixin {
           },
         ),
 
+        /// Listens for note-related state changes.
         BlocListener<NoteBloc, NoteState>(
           listener: (context, state) {
             if (state is NoteError) {
@@ -118,6 +135,8 @@ class _NotesPageState extends State<NotesPage> with TickerProviderStateMixin {
           },
         ),
       ],
+
+      /// Main scaffold containing app bar and notes body.
       child: Scaffold(
         appBar: NotesAppBar(
           syncController: _syncController,
@@ -139,26 +158,3 @@ class _NotesPageState extends State<NotesPage> with TickerProviderStateMixin {
     );
   }
 }
-
-
-
-//dummy check
-//               ConflictDialog().showConflictDialog(
-//                 context,
-//                 NoteEntity(
-//                   id: "123",
-//                   title: "kjasbfkjas",
-//                   body: "dafkjna",
-//                   updatedAt: DateTime.now(),
-//                   syncStatus: SyncStatus.pending,
-//                   isDeleted: false,
-//                 ),
-//                 NoteEntity(
-//                   id: "123",
-//                   title: "kjasbfkjas",
-//                   body: "dafkjna",
-//                   updatedAt: DateTime.now(),
-//                   syncStatus: SyncStatus.pending,
-//                   isDeleted: false,
-//                 ),
-//               );

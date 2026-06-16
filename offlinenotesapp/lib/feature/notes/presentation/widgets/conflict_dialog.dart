@@ -6,6 +6,10 @@ import 'package:offlinenotesapp/feature/notes/presentation/bloc/note_bloc.dart';
 import 'package:offlinenotesapp/feature/notes/presentation/bloc/note_event.dart';
 import 'package:offlinenotesapp/feature/notes/presentation/cubit/connectivity_cubit.dart';
 
+/// Dialog used to resolve conflicts between local and server note versions.
+///
+/// Displays both versions side-by-side and allows the user to choose
+/// either the local or server version as the final source of truth.
 class ConflictDialog {
   void showConflictDialog(
     BuildContext context,
@@ -22,6 +26,8 @@ class ConflictDialog {
             borderRadius: BorderRadius.circular(24),
             side: const BorderSide(color: AppPalette.purple),
           ),
+
+          /// Dialog title with warning indicator
           title: const Row(
             children: [
               Icon(
@@ -40,6 +46,8 @@ class ConflictDialog {
               ),
             ],
           ),
+
+          /// Displays both local and server versions of the note
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -54,6 +62,7 @@ class ConflictDialog {
 
                 const SizedBox(height: 20),
 
+                /// Local version section
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
@@ -105,6 +114,7 @@ class ConflictDialog {
 
                 const Divider(),
 
+                /// Server version section
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
@@ -156,7 +166,10 @@ class ConflictDialog {
               ],
             ),
           ),
+
+          /// Action buttons for resolving conflict
           actions: [
+            /// Use local version button
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(
@@ -187,6 +200,8 @@ class ConflictDialog {
               },
               child: Text('Use Local'),
             ),
+
+            /// Use server version button
             OutlinedButton(
               style: OutlinedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(

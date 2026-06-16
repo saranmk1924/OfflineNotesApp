@@ -5,6 +5,10 @@ import 'package:offlinenotesapp/core/constants/app_palette.dart';
 import 'package:offlinenotesapp/feature/notes/presentation/bloc/note_bloc.dart';
 import 'package:offlinenotesapp/feature/notes/presentation/bloc/note_event.dart';
 
+/// Dialog used to confirm deletion of a note.
+///
+/// Displays the note title and asks the user for confirmation before
+/// dispatching a delete event to [NoteBloc].
 class DeleteConfirmationDialog {
   void show(BuildContext context, String noteId, String noteTitle) {
     showDialog(
@@ -17,6 +21,7 @@ class DeleteConfirmationDialog {
             side: const BorderSide(color: AppPalette.purple),
           ),
 
+          /// Dialog title with delete icon
           title: const Row(
             children: [
               Icon(
@@ -35,6 +40,7 @@ class DeleteConfirmationDialog {
             ],
           ),
 
+          /// Confirmation message and note preview
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -46,6 +52,7 @@ class DeleteConfirmationDialog {
 
               const SizedBox(height: 16),
 
+              /// Note preview container
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(12),
@@ -66,6 +73,7 @@ class DeleteConfirmationDialog {
             ],
           ),
 
+          /// Action buttons
           actions: [
             OutlinedButton(
               style: OutlinedButton.styleFrom(

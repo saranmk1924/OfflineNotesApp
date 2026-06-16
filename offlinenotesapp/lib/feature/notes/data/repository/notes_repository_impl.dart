@@ -7,25 +7,42 @@ import '../../domain/repository/notes_repository.dart';
 import '../datasource/local/notes_local_datasource.dart';
 import '../models/note_model.dart';
 
+/// Repository implementation that coordinates between local and remote data sources.
+///
+/// This class acts as the single source of truth for note-related operations,
+/// handling:
+/// - Local CRUD operations (offline-first)
+/// - Remote synchronization
+/// - Conflict detection and resolution
+/// - Data merging between local and server states
 class NotesRepositoryImpl implements NotesRepository {
+  /// Local data source (Hive-based storage).
   final NotesLocalDataSource localDataSource;
+
+  /// Remote data source (API-based storage).
   final NotesRemoteDataSource remoteDataSource;
 
+  /// Creates a new [NotesRepositoryImpl] instance.
   NotesRepositoryImpl(this.localDataSource, this.remoteDataSource);
 
   @override
+  /// Adds a new note to local storage.
   Future<void> addNote(NoteEntity note) async {
     await localDataSource.addNote(NoteModel.fromEntity(note));
   }
 
   @override
+  /// Updates an existing note in local storage.
   Future<void> updateNote(NoteEntity note) async {
     await localDataSource.updateNote(NoteModel.fromEntity(note));
   }
 
   @override
+  /// Marks a note as deleted locally (soft delete).
+  ///
+  /// The note is not immediately removed; instead, it is flagged for
+  /// deletion and synced with the server later.
   Future<void> deleteNote(String id) async {
-    // await localDataSource.deleteNote(id);
     final notes = await localDataSource.getNotes();
 
     final note = notes.firstWhere((n) => n.id == id);
@@ -40,13 +57,22 @@ class NotesRepositoryImpl implements NotesRepository {
   }
 
   @override
+  /// Retrieves all locally stored notes.
+  ///
+  /// This method returns offline-first data and does not directly
+  /// query the remote server.
   Future<List<NoteEntity>> getNotes() async {
     return await localDataSource.getNotes();
-
-    // return notes.where((e) => !e.isDeleted).toList();
   }
 
   @override
+  /// Synchronizes local notes with the remote server.
+  ///
+  /// Handles:
+  /// - Uploading local changes
+  /// - Downloading remote updates
+  /// - Detecting conflicts between local and server versions
+  /// - Merging and persisting final state
   Future<ConflictEntity?> syncNotes() async {
     try {
       final localNotes = await localDataSource.getNotes();
@@ -55,6 +81,8 @@ class NotesRepositoryImpl implements NotesRepository {
 
       for (final note in localNotes) {
         final serverNote = await remoteDataSource.getNoteById(note.id);
+
+        /// Handle deleted notes first.
         if (note.isDeleted) {
           final localDeletedAfterSync =
               note.lastSyncedAt != null &&
@@ -78,6 +106,8 @@ class NotesRepositoryImpl implements NotesRepository {
             continue;
           }
         }
+
+        /// Skip already synced notes.
         if (note.syncStatus != SyncStatus.pending) {
           updatedNotes.add(NoteModel.fromEntity(note));
           continue;
@@ -85,7 +115,6 @@ class NotesRepositoryImpl implements NotesRepository {
 
         try {
           NoteModel syncedNote;
-          // final serverNote = await remoteDataSource.getNoteById(note.id);
 
           final localChanged =
               note.lastSyncedAt != null &&
@@ -106,11 +135,12 @@ class NotesRepositoryImpl implements NotesRepository {
             return ConflictEntity(localNote: note, serverNote: serverNote);
           }
 
-          // server & local edited
+          /// Both LOCAL and SERVER modified
           if (serverNote != null && localChanged && serverChanged) {
             return ConflictEntity(localNote: note, serverNote: serverNote);
           }
 
+          /// Create note on server if it doesn't exist.
           if (serverNote == null) {
             final createdNote = await remoteDataSource.addNote(
               NoteModel.fromEntity(note),
@@ -133,12 +163,11 @@ class NotesRepositoryImpl implements NotesRepository {
 
           updatedNotes.add(syncedNote);
         } catch (e) {
-          // print("SYNC FAILED FOR NOTE ${note.id} => $e");
           throw Exception('No internet connection');
-          // updatedNotes.add(NoteModel.fromEntity(note));
         }
       }
 
+      /// Pull remote updates after local sync.
       try {
         final remoteNotes = await remoteDataSource.getNotes();
 
@@ -167,14 +196,12 @@ class NotesRepositoryImpl implements NotesRepository {
                 );
               }
             } catch (e) {
-              // print("REMOTE NOTE SYNC FAILED ${remoteNote.id} => $e");
-
               updatedNotes.add(remoteNote);
             }
           }
         }
       } catch (e) {
-        // print('FAILED TO FETCH REMOTE NOTES => $e');
+        // Remote fetch failure is non-fatal for sync process.
       }
 
       await localDataSource.saveNotes(updatedNotes);
@@ -186,6 +213,7 @@ class NotesRepositoryImpl implements NotesRepository {
   }
 
   @override
+  /// Checks for conflicts between local and remote notes.
   Future<(NoteEntity, NoteEntity)?> checkConflict() async {
     final localNotes = await localDataSource.getNotes();
     final remoteNotes = await remoteDataSource.getNotes();
@@ -214,6 +242,7 @@ class NotesRepositoryImpl implements NotesRepository {
   }
 
   @override
+  /// Forces the local version of a note to take precedence.
   Future<void> useLocalVersion(NoteEntity localNote) async {
     final syncedNote = NoteModel.fromEntity(
       localNote,
@@ -227,6 +256,7 @@ class NotesRepositoryImpl implements NotesRepository {
   }
 
   @override
+  /// Forces the server version of a note to take precedence.
   Future<void> useServerVersion(NoteEntity serverNote) async {
     final syncedNote = NoteModel.fromEntity(
       serverNote,
@@ -238,6 +268,7 @@ class NotesRepositoryImpl implements NotesRepository {
   }
 
   @override
+  /// Retrieves the last successful synchronization timestamp.
   DateTime? getLastSyncTime() {
     return localDataSource.getLastSyncTime();
   }

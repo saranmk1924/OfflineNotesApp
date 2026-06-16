@@ -5,6 +5,10 @@ import 'package:offlinenotesapp/feature/notes/presentation/bloc/note_bloc.dart';
 import 'package:offlinenotesapp/feature/notes/presentation/bloc/note_state.dart';
 import 'package:offlinenotesapp/feature/notes/presentation/pages/add_edit_note_page.dart';
 
+/// Floating Action Button used to create a new note.
+///
+/// The button is disabled during sync operations or conflict resolution
+/// to prevent data inconsistency.
 class AddNoteFabWidget extends StatelessWidget {
   const AddNoteFabWidget({super.key});
 
@@ -22,6 +26,8 @@ class AddNoteFabWidget extends StatelessWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(18),
           ),
+
+          /// Disables navigation while syncing or resolving conflicts
           onPressed: state is NoteSyncing || state is ConflictResolvingState
               ? null
               : () {

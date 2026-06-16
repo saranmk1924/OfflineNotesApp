@@ -8,9 +8,14 @@ import '../../../../core/enums/sync_status.dart';
 import '../bloc/note_bloc.dart';
 import '../bloc/note_event.dart';
 
+/// Page for creating a new note or editing an existing one.
+///
+/// Handles both add and update flows based on whether a [NoteEntity]
+/// is passed to the widget.
 class AddEditNotePage extends StatefulWidget {
   final NoteEntity? note;
 
+  /// Creates an [AddEditNotePage].
   const AddEditNotePage({super.key, this.note});
 
   @override
@@ -18,12 +23,17 @@ class AddEditNotePage extends StatefulWidget {
 }
 
 class _AddEditNotePageState extends State<AddEditNotePage> {
+  /// Controller for note title input field.
   late final TextEditingController titleController;
+
+  /// Controller for note body input field.
   late final TextEditingController bodyController;
 
+  /// Returns true if the page is in edit mode.
   bool get isEdit => widget.note != null;
 
   @override
+  /// Initializes text controllers with existing note data (if any).
   void initState() {
     super.initState();
 
@@ -33,12 +43,16 @@ class _AddEditNotePageState extends State<AddEditNotePage> {
   }
 
   @override
+  /// Disposes controllers to free resources.
   void dispose() {
     titleController.dispose();
     bodyController.dispose();
     super.dispose();
   }
 
+  /// Creates or updates a note based on the current mode.
+  ///
+  /// Validates input fields before dispatching events to [NoteBloc].
   void saveNote() {
     final title = titleController.text.trim();
     final body = bodyController.text.trim();
@@ -77,6 +91,7 @@ class _AddEditNotePageState extends State<AddEditNotePage> {
   }
 
   @override
+  /// Builds the UI for creating or editing a note.
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(isEdit ? 'Edit Note' : 'Add Note')),
@@ -84,6 +99,7 @@ class _AddEditNotePageState extends State<AddEditNotePage> {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
+            /// Title input field
             TextField(
               style: const TextStyle(color: AppPalette.white),
               controller: titleController,
@@ -114,6 +130,8 @@ class _AddEditNotePageState extends State<AddEditNotePage> {
               ),
             ),
             const SizedBox(height: 16),
+
+            /// Body input field
             Expanded(
               child: TextField(
                 maxLength: 2000,
@@ -150,13 +168,14 @@ class _AddEditNotePageState extends State<AddEditNotePage> {
               ),
             ),
             const SizedBox(height: 10),
+
+            /// Save/Update button
             Row(
               children: [
                 Expanded(child: SizedBox()),
                 Expanded(
                   flex: 2,
                   child: SizedBox(
-                    // width: double.infinity,
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppPalette.purple,

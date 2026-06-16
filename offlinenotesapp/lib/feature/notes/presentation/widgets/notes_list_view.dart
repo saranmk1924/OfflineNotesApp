@@ -7,6 +7,11 @@ import 'package:offlinenotesapp/core/enums/sync_status.dart';
 import 'package:offlinenotesapp/feature/notes/presentation/pages/add_edit_note_page.dart';
 import 'package:offlinenotesapp/feature/notes/presentation/widgets/delete_confirmation_dialog.dart';
 
+/// Grid-based list view for displaying notes.
+///
+/// Uses a staggered grid layout that adapts to different [PlatformType]s
+/// and supports edit/delete actions depending on configuration.
+
 class NotesListView extends StatefulWidget {
   final List<NoteEntity> notes;
   final bool isDelete;
@@ -23,6 +28,7 @@ class NotesListView extends StatefulWidget {
 }
 
 class _NotesListViewState extends State<NotesListView> {
+  /// Scroll controller used for custom scrollbar behavior.
   final ScrollController _scrollController = ScrollController();
 
   @override
@@ -48,6 +54,8 @@ class _NotesListViewState extends State<NotesListView> {
           child: MasonryGridView.builder(
             controller: _scrollController,
             itemCount: widget.notes.length,
+
+            /// Responsive column count
             gridDelegate: SliverSimpleGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: widget.platformType == PlatformType.mobile
                   ? 1
@@ -55,6 +63,8 @@ class _NotesListViewState extends State<NotesListView> {
                   ? 2
                   : 3,
             ),
+
+            /// Spacing based on platform
             crossAxisSpacing: widget.platformType == PlatformType.mobile
                 ? 0
                 : widget.platformType == PlatformType.tablet
@@ -86,6 +96,8 @@ class _NotesListViewState extends State<NotesListView> {
                 ),
                 child: InkWell(
                   borderRadius: BorderRadius.circular(16),
+
+                  /// Tap to edit note (only when delete mode enabled)
                   onTap: widget.isDelete
                       ? () {
                           Navigator.push(
@@ -101,6 +113,8 @@ class _NotesListViewState extends State<NotesListView> {
                       horizontal: 16,
                       vertical: 8,
                     ),
+
+                    /// Sync status indicator
                     leading: Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
@@ -116,6 +130,8 @@ class _NotesListViewState extends State<NotesListView> {
                             : AppPalette.red,
                       ),
                     ),
+
+                    /// Note title
                     title: Text(
                       note.title,
                       maxLines: 2,
@@ -126,6 +142,8 @@ class _NotesListViewState extends State<NotesListView> {
                         fontSize: 16,
                       ),
                     ),
+
+                    /// Note body preview
                     subtitle: Padding(
                       padding: const EdgeInsets.only(top: 4),
                       child: Text(
@@ -136,6 +154,7 @@ class _NotesListViewState extends State<NotesListView> {
                       ),
                     ),
 
+                    /// Delete action button
                     trailing: Opacity(
                       opacity: widget.isDelete ? 1.0 : 0.2,
 

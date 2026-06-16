@@ -5,6 +5,10 @@ import 'package:offlinenotesapp/feature/notes/presentation/bloc/note_state.dart'
 import 'package:offlinenotesapp/feature/notes/presentation/widgets/last_sync_status_widget.dart';
 import 'package:offlinenotesapp/feature/notes/presentation/widgets/notes_list_view.dart';
 
+/// This view is shown when notes are successfully loaded from local storage / sync.
+/// It renders:
+/// 1. Last sync status indicator
+/// 2. Notes grid/list based on platform responsiveness
 class NotesLoadedView extends StatelessWidget {
   final NoteLoaded state;
   final PlatformType platformType;

@@ -5,6 +5,11 @@ import 'package:offlinenotesapp/feature/notes/presentation/bloc/note_state.dart'
 import 'package:offlinenotesapp/feature/notes/presentation/widgets/last_sync_status_widget.dart';
 import 'package:offlinenotesapp/feature/notes/presentation/widgets/notes_list_view.dart';
 
+/// UI view shown when a conflict between local and server notes is detected.
+///
+/// Displays:
+/// - Last sync status
+/// - Previously loaded notes (before conflict occurred)
 class ConflictDetectionView extends StatelessWidget {
   final ConflictDetectedState state;
   const ConflictDetectionView({super.key, required this.state});
@@ -18,6 +23,8 @@ class ConflictDetectionView extends StatelessWidget {
           child: NotesListView(
             notes: state.previousNotes,
             isDelete: false,
+
+            /// Adapts UI based on screen size
             platformType: ResponsiveSizes.isMobile(context)
                 ? PlatformType.mobile
                 : ResponsiveSizes.isTablet(context)

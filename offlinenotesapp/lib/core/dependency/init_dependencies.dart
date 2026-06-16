@@ -22,39 +22,53 @@ import '../../feature/notes/data/datasource/local/notes_local_datasource_impl.da
 import '../../feature/notes/data/repository/notes_repository_impl.dart';
 import '../../feature/notes/domain/repository/notes_repository.dart';
 
-//service locator
+/// Global service locator instance used for dependency injection
+/// throughout the application.
 final sl = GetIt.instance;
 
+/// Registers and initializes all application dependencies.
+///
+/// This includes:
+/// - Core services
+/// - Data sources
+/// - Repositories
+/// - Use cases
+/// - BLoCs and Cubits
+///
+/// [notesBox] is used for storing notes locally.
+/// [appBox] is used for storing app-level preferences and metadata.
 Future<void> initDependencies(Box notesBox, Box appBox) async {
+  /// Core network client.
   sl.registerLazySingleton(DioClient.new);
 
-  /// Datasource
+  /// Local data source responsible for Hive operations.
   sl.registerLazySingleton<NotesLocalDataSource>(
-    () => NotesLocalDataSourceImpl(notesBox,appBox),
+    () => NotesLocalDataSourceImpl(notesBox, appBox),
   );
 
+  /// Remote data source responsible for API operations.
   sl.registerLazySingleton<NotesRemoteDataSource>(
     () => NotesRemoteDataSourceImpl(sl()),
   );
 
-  /// Repository
+  /// Repository implementation that coordinates local and remote data.
   sl.registerLazySingleton<NotesRepository>(
     () => NotesRepositoryImpl(sl(), sl()),
   );
 
-  /// UseCases
+  /// Note management use cases.
   sl.registerLazySingleton(() => AddNoteUsecase(sl()));
-
   sl.registerLazySingleton(() => UpdateNoteUsecase(sl()));
-
   sl.registerLazySingleton(() => DeleteNoteUsecase(sl()));
-
   sl.registerLazySingleton(() => GetNotesUsecase(sl()));
-
   sl.registerLazySingleton(() => SyncNotesUsecase(sl()));
-
   sl.registerLazySingleton(() => GetLastSyncTimeUsecase(sl()));
+  sl.registerLazySingleton(() => CheckConflictUsecase(sl()));
+  sl.registerLazySingleton(() => UseLocalVersionUsecase(sl()));
+  sl.registerLazySingleton(() => UseServerVersionUsecase(sl()));
 
+  /// Factory registration ensures a new BLoC instance is created
+  /// whenever it is requested.
   sl.registerFactory(
     () => NoteBloc(
       addNote: sl(),
@@ -69,12 +83,12 @@ Future<void> initDependencies(Box notesBox, Box appBox) async {
     ),
   );
 
+  /// Connectivity plugin for monitoring network status.
   sl.registerLazySingleton(Connectivity.new);
+
+  /// Service that wraps connectivity-related functionality.
   sl.registerLazySingleton(() => ConnectivityService(sl()));
 
+  /// Cubit responsible for exposing connectivity state to the UI.
   sl.registerLazySingleton(() => ConnectivityCubit(sl()));
-  sl.registerLazySingleton(() => CheckConflictUsecase(sl()));
-  sl.registerLazySingleton(() => UseLocalVersionUsecase(sl()));
-
-  sl.registerLazySingleton(() => UseServerVersionUsecase(sl()));
 }

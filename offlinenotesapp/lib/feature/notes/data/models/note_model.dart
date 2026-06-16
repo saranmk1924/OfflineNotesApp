@@ -1,7 +1,13 @@
 import '../../domain/entities/note_entity.dart';
 import '../../../../core/enums/sync_status.dart';
 
+/// Data model representing a Note in the application.
+///
+/// Extends [NoteEntity] to include data-layer functionality such as
+/// JSON serialization and deserialization for API and local storage.
+/// This model acts as a bridge between domain entities and external data sources.
 class NoteModel extends NoteEntity {
+  /// Creates a new [NoteModel] instance.
   const NoteModel({
     required super.id,
     required super.title,
@@ -12,27 +18,25 @@ class NoteModel extends NoteEntity {
     super.lastSyncedAt,
   });
 
+  /// Creates a [NoteModel] from a JSON map (e.g. API response or Hive data).
   factory NoteModel.fromJson(Map<String, dynamic> json) {
     return NoteModel(
       id: json['id'].toString(),
       title: json['title']?.toString() ?? '',
       body: json['body']?.toString() ?? '',
-      updatedAt: DateTime.parse(
-        json['updatedAt'].toString(),
-      ),
+      updatedAt: DateTime.parse(json['updatedAt'].toString()),
       syncStatus: SyncStatus.values.firstWhere(
         (status) => status.name == json['syncStatus']?.toString(),
         orElse: () => SyncStatus.pending,
       ),
       isDeleted: json['isDeleted'] ?? false,
       lastSyncedAt: json['lastSyncedAt'] != null
-          ? DateTime.parse(
-              json['lastSyncedAt'].toString(),
-            )
+          ? DateTime.parse(json['lastSyncedAt'].toString())
           : null,
     );
   }
 
+  /// Converts this [NoteModel] into a JSON map for storage or API requests.
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -45,6 +49,7 @@ class NoteModel extends NoteEntity {
     };
   }
 
+  /// Creates a [NoteModel] from a domain [NoteEntity].
   factory NoteModel.fromEntity(NoteEntity entity) {
     return NoteModel(
       id: entity.id,
@@ -58,6 +63,9 @@ class NoteModel extends NoteEntity {
   }
 
   @override
+  /// Creates a modified copy of this [NoteModel].
+  ///
+  /// Useful for maintaining immutability while updating specific fields.
   NoteModel copyWith({
     String? id,
     String? title,

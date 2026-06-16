@@ -5,6 +5,10 @@ import 'package:offlinenotesapp/feature/notes/presentation/bloc/note_state.dart'
 import 'package:offlinenotesapp/feature/notes/presentation/widgets/last_sync_status_widget.dart';
 import 'package:offlinenotesapp/feature/notes/presentation/widgets/notes_list_view.dart';
 
+/// UI displayed when an error occurs in the Notes feature.
+///
+/// Shows the last known notes state along with a list view and
+/// indicates that the app is currently in an error state.
 class NotesErrorView extends StatelessWidget {
   final NoteError state;
   const NotesErrorView({super.key, required this.state});

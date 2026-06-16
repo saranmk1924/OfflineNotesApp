@@ -6,6 +6,10 @@ import 'package:offlinenotesapp/feature/notes/domain/entities/note_entity.dart';
 import 'package:offlinenotesapp/feature/notes/presentation/widgets/last_sync_status_widget.dart';
 import 'package:offlinenotesapp/feature/notes/presentation/widgets/notes_list_view.dart';
 
+/// UI shown while notes are actively syncing with the server.
+///
+/// Displays the current list of notes in the background along with
+/// a loading overlay to indicate sync progress.
 class NoteSyncingView extends StatelessWidget {
   final List<NoteEntity> notes;
   const NoteSyncingView({super.key, required this.notes});

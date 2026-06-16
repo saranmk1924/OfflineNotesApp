@@ -9,6 +9,12 @@ import 'package:offlinenotesapp/feature/notes/presentation/bloc/note_event.dart'
 import 'package:offlinenotesapp/feature/notes/presentation/bloc/note_state.dart';
 import 'package:offlinenotesapp/feature/notes/presentation/cubit/connectivity_cubit.dart';
 
+/// Custom AppBar for the Notes feature.
+///
+/// Shows:
+/// - Connectivity status (online/offline)
+/// - App title
+/// - Sync action button with pending sync indicator
 class NotesAppBar extends StatelessWidget implements PreferredSizeWidget {
   final AnimationController _syncController;
   final Animation<double> _pulseAnimation;
@@ -26,6 +32,8 @@ class NotesAppBar extends StatelessWidget implements PreferredSizeWidget {
       centerTitle: true,
       elevation: 0,
       backgroundColor: AppPalette.black,
+
+      /// Connectivity indicator (wifi / offline)
       leadingWidth: 50,
       leading: BlocBuilder<ConnectivityCubit, bool>(
         builder: (context, isConnected) {
@@ -38,17 +46,19 @@ class NotesAppBar extends StatelessWidget implements PreferredSizeWidget {
               shadows: [
                 Shadow(
                   color: isConnected ? AppPalette.purple : AppPalette.red,
-                  blurRadius: 15,
+                  blurRadius: 10,
                 ),
                 Shadow(
                   color: isConnected ? AppPalette.purple : AppPalette.red,
-                  blurRadius: 25,
+                  blurRadius: 0,
                 ),
               ],
             ),
           );
         },
       ),
+
+      /// App title
       title: Padding(
         padding: const EdgeInsets.only(left: 0),
         child: ShaderMask(
@@ -67,6 +77,8 @@ class NotesAppBar extends StatelessWidget implements PreferredSizeWidget {
           ),
         ),
       ),
+
+      /// Sync action button
       actions: [
         Padding(
           padding: const EdgeInsets.only(right: 10),
@@ -84,6 +96,8 @@ class NotesAppBar extends StatelessWidget implements PreferredSizeWidget {
               }
               context.read<NoteBloc>().add(SyncNotesEvent());
             },
+
+            /// Sync icon with animation + pending badge
             icon: BlocBuilder<ConnectivityCubit, bool>(
               builder: (context, isConnected) {
                 return BlocBuilder<NoteBloc, NoteState>(
@@ -102,6 +116,7 @@ class NotesAppBar extends StatelessWidget implements PreferredSizeWidget {
                     return Stack(
                       clipBehavior: Clip.none,
                       children: [
+                        /// Rotating + pulsing sync icon
                         ScaleTransition(
                           scale: (isConnected && pendingCount > 0)
                               ? _pulseAnimation
@@ -144,6 +159,8 @@ class NotesAppBar extends StatelessWidget implements PreferredSizeWidget {
                             ),
                           ),
                         ),
+
+                        /// Pending sync count badge
                         if (pendingCount > 0 && isConnected)
                           Positioned(
                             top: -4,

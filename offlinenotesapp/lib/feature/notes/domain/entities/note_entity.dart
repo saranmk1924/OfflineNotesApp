@@ -2,6 +2,11 @@ import 'package:equatable/equatable.dart';
 
 import '../../../../core/enums/sync_status.dart';
 
+/// Core domain entity representing a Note.
+///
+/// This is the pure business model used across the application layers.
+/// It contains no framework or data-source dependencies and defines
+/// the essential properties and behavior of a note.
 class NoteEntity extends Equatable {
   final String id;
   final String title;
@@ -11,6 +16,7 @@ class NoteEntity extends Equatable {
   final bool isDeleted;
   final DateTime? lastSyncedAt;
 
+  /// Creates a new immutable [NoteEntity].
   const NoteEntity({
     required this.id,
     required this.title,
@@ -22,6 +28,7 @@ class NoteEntity extends Equatable {
   });
 
   @override
+  /// Properties used for value comparison.
   List<Object?> get props => [
     id,
     title,
@@ -32,6 +39,9 @@ class NoteEntity extends Equatable {
     lastSyncedAt,
   ];
 
+  /// Creates a copy of this [NoteEntity] with updated fields.
+  ///
+  /// Useful for maintaining immutability while modifying specific values.
   NoteEntity copyWith({
     String? id,
     String? title,
@@ -48,7 +58,7 @@ class NoteEntity extends Equatable {
       isDeleted: isDeleted ?? this.isDeleted,
       syncStatus: syncStatus ?? this.syncStatus,
       updatedAt: updatedAt ?? this.updatedAt,
-      lastSyncedAt: lastSyncedAt ?? this.lastSyncedAt
+      lastSyncedAt: lastSyncedAt ?? this.lastSyncedAt,
     );
   }
 }

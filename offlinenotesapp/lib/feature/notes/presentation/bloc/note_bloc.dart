@@ -13,6 +13,14 @@ import 'package:offlinenotesapp/feature/notes/domain/usecase/use_server_version_
 import 'note_event.dart';
 import 'note_state.dart';
 
+/// Business Logic Component (BLoC) responsible for managing note state.
+///
+/// Handles:
+/// - CRUD operations
+/// - Offline-first state management
+/// - Synchronization with remote server
+/// - Conflict detection and resolution
+/// - Emitting UI states based on note operations
 class NoteBloc extends Bloc<NoteEvent, NoteState> {
   final AddNoteUsecase addNote;
   final UpdateNoteUsecase updateNote;
@@ -24,6 +32,7 @@ class NoteBloc extends Bloc<NoteEvent, NoteState> {
   final UseServerVersionUsecase useServerVersion;
   final GetLastSyncTimeUsecase getLastSyncTime;
 
+  /// Creates a new [NoteBloc] instance and registers event handlers.
   NoteBloc({
     required this.addNote,
     required this.updateNote,
@@ -45,6 +54,7 @@ class NoteBloc extends Bloc<NoteEvent, NoteState> {
     on<UseServerVersionEvent>(_onUseServerVersion);
   }
 
+  /// Loads all notes and emits [NoteLoaded] state.
   Future<void> _onLoadNotes(
     LoadNotesEvent event,
     Emitter<NoteState> emit,
@@ -54,11 +64,13 @@ class NoteBloc extends Bloc<NoteEvent, NoteState> {
     await _emitLoaded(emit);
   }
 
+  /// Adds a new note and refreshes state.
   Future<void> _onAddNote(AddNoteEvent event, Emitter<NoteState> emit) async {
     await addNote(event.note.copyWith(syncStatus: SyncStatus.pending));
     await _emitLoaded(emit);
   }
 
+  /// Updates an existing note and refreshes state.
   Future<void> _onUpdateNote(
     UpdateNoteEvent event,
     Emitter<NoteState> emit,
@@ -68,6 +80,7 @@ class NoteBloc extends Bloc<NoteEvent, NoteState> {
     await _emitLoaded(emit);
   }
 
+  /// Marks a note as deleted (soft delete) and refreshes state.
   Future<void> _onDeleteNote(
     DeleteNoteEvent event,
     Emitter<NoteState> emit,
@@ -86,40 +99,42 @@ class NoteBloc extends Bloc<NoteEvent, NoteState> {
     await _emitLoaded(emit);
   }
 
+  /// Syncs local notes with remote server and handles conflicts.
   Future<void> _onSyncNotes(
     SyncNotesEvent event,
     Emitter<NoteState> emit,
   ) async {
-    List<NoteEntity> previousNotes =[];
-    try{
-    // get latest snapshot BEFORE sync
-    final notes = await getNotes();
-    final activeNotes = notes.where((n) => !n.isDeleted).toList();
-    previousNotes = activeNotes;
-    emit(NoteSyncing(previousNotes: activeNotes));
-    final conflict = await syncNotes();
+    List<NoteEntity> previousNotes = [];
+    try {
+      // get latest snapshot BEFORE sync
+      final notes = await getNotes();
+      final activeNotes = notes.where((n) => !n.isDeleted).toList();
+      previousNotes = activeNotes;
+      emit(NoteSyncing(previousNotes: activeNotes));
+      final conflict = await syncNotes();
 
-    if (conflict != null) {
-      emit(
-        ConflictDetectedState(
-          localNote: conflict.localNote,
-          serverNote: conflict.serverNote,
-          previousNotes: activeNotes,
-        ),
-      );
-      return;
-    }
+      if (conflict != null) {
+        emit(
+          ConflictDetectedState(
+            localNote: conflict.localNote,
+            serverNote: conflict.serverNote,
+            previousNotes: activeNotes,
+          ),
+        );
+        return;
+      }
 
-    await _markAllSynced();
+      await _markAllSynced();
 
-    emit(NoteSyncSuccess());
+      emit(NoteSyncSuccess());
 
-    await _emitLoaded(emit);
+      await _emitLoaded(emit);
     } catch (e) {
-    emit(NoteError("Failed to sync", previousNotes: previousNotes));
-  }
+      emit(NoteError("Failed to sync", previousNotes: previousNotes));
+    }
   }
 
+  /// Checks for conflicts between local and server data.
   Future<void> _onCheckConflict(
     CheckConflictEvent event,
     Emitter<NoteState> emit,
@@ -138,6 +153,7 @@ class NoteBloc extends Bloc<NoteEvent, NoteState> {
     }
   }
 
+  /// Resolves conflict by choosing local version.
   Future<void> _onUseLocalVersion(
     UseLocalVersionEvent event,
     Emitter<NoteState> emit,
@@ -165,6 +181,7 @@ class NoteBloc extends Bloc<NoteEvent, NoteState> {
     }
   }
 
+  /// Resolves conflict by choosing server version.
   Future<void> _onUseServerVersion(
     UseServerVersionEvent event,
     Emitter<NoteState> emit,
@@ -193,15 +210,18 @@ class NoteBloc extends Bloc<NoteEvent, NoteState> {
   }
 
   //Helper
+  /// Returns only active (non-deleted) notes.
   List<NoteEntity> _active(List<NoteEntity> notes) {
     return notes.where((n) => !n.isDeleted).toList();
   }
 
+  /// Emits the loaded state with latest notes and sync info.
   Future<void> _emitLoaded(Emitter<NoteState> emit) async {
     final notes = await getNotes();
     emit(NoteLoaded(_active(notes), notes, lastSyncTime: getLastSyncTime()));
   }
 
+  /// Marks all notes as synced after successful sync operation.
   Future<void> _markAllSynced() async {
     final notes = await getNotes();
 

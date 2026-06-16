@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 
+/// Defines the color palette used throughout the application.
+///
+/// Centralizing colors in a single class ensures consistency across
+/// the UI and makes it easier to update the app's theme.
 class AppPalette {
   static const Color black = Colors.black;
   static const Color white = Colors.white;

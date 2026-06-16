@@ -14,7 +14,17 @@ import 'package:offlinenotesapp/feature/notes/presentation/widgets/notes_empty_v
 import 'package:offlinenotesapp/feature/notes/presentation/widgets/notes_error_view.dart';
 import 'package:offlinenotesapp/feature/notes/presentation/widgets/notes_loaded_view.dart';
 
+/// Main body widget for the Notes screen.
+///
+/// This widget acts as a state router that listens to [NoteBloc] and
+/// displays the appropriate UI based on the current state:
+/// - Loading
+/// - Syncing
+/// - Conflict detection/resolution
+/// - Error state
+/// - Loaded notes
 class NotesBody extends StatelessWidget {
+  /// Current platform type used for responsive layout decisions.
   final PlatformType platformType;
   const NotesBody({super.key, required this.platformType});
 
@@ -25,38 +35,48 @@ class NotesBody extends StatelessWidget {
       children: [
         BlocBuilder<NoteBloc, NoteState>(
           builder: (context, state) {
+            /// Initial loading state
             if (state is NoteLoading) {
               return const Center(child: AppLoader());
             }
 
+            /// Sync in progress state
             if (state is NoteSyncing) {
               final List<NoteEntity> notes = state.previousNotes;
               return NoteSyncingView(notes: notes);
             }
 
+            /// Conflict resolution in progress
             if (state is ConflictResolvingState) {
               return ConflictResolvingView(state: state);
             }
 
+            /// Error state
             if (state is NoteError) {
               return NotesErrorView(state: state);
             }
 
+            /// Conflict detected state
             if (state is ConflictDetectedState) {
               return ConflictDetectionView(state: state);
             }
 
+            /// Loaded state
             if (state is NoteLoaded) {
+              // Loaded state without notes
               if (state.notes.isEmpty) {
                 return NotesEmptyView();
               }
-
-              return NotesLoadedView(state: state, platformType: platformType,);
+              // Loaded state with notes
+              return NotesLoadedView(state: state, platformType: platformType);
             }
 
+            /// Fallback UI
             return const SizedBox.shrink();
           },
         ),
+
+        /// Floating action button for adding notes
         Positioned(bottom: 70, child: AddNoteFabWidget()),
       ],
     );
