@@ -1,4 +1,5 @@
-# OfflineNotesApp 
+# OfflineNotesApp
+
 OfflineNotesApp is a cross-platform Flutter-based Offline Notes Application designed to deliver a smooth and reliable note-taking experience with full offline capabilities and cloud synchronization. The application supports complete CRUD operations, allowing users to create, read, update, and delete notes efficiently. It is built with an offline-first approach, ensuring that users can continue using the app without any internet connection interruptions.
 
 For local storage, the application uses **Hive**, a lightweight and fast NoSQL database for Flutter. Hive acts as the primary offline storage layer where all notes are stored instantly when created or modified. This ensures fast access, high performance, and seamless offline functionality. Any changes made by the user—such as creating, editing, or deleting notes—are first persisted in Hive and later synchronized with the remote server when connectivity is available.
@@ -14,3 +15,57 @@ Edge cases such as simultaneous edits, deletions, and mismatched updates are als
 From an architectural standpoint, the project follows **Clean Architecture principles**, ensuring a highly scalable and maintainable codebase. The structure is divided into Data, Domain, and Presentation layers, each responsible for a specific concern. The Repository Pattern is used to abstract data sources such as Hive and MockAPI.io, while **BLoC (Business Logic Component)** is used for state management to ensure predictable and reactive UI updates. This separation of concerns makes the application easy to extend, test, and maintain.
 
 Overall, this project represents a production-ready offline-first notes application with strong synchronization capabilities, conflict resolution mechanisms, and a clean modular architecture. It ensures that user data remains safe, consistent, and accessible across both offline and online environments, providing a seamless experience regardless of network conditions.
+
+## Screenshots
+
+### Syncing
+
+![Syncing](offlinenotesapp/assets/screenshots/syncing_1.jpeg)
+
+### After sync
+
+![After sync](offlinenotesapp/assets/screenshots/after_sync.jpeg)
+
+### Add note
+
+![Add note](offlinenotesapp/assets/screenshots/add_note.jpeg)
+
+### Add note
+
+![Add note](offlinenotesapp/assets/screenshots/add_note_2.jpeg)
+
+### Added note not Synced
+
+![Added note not Synced](offlinenotesapp/assets/screenshots/added_note_not_synced.jpeg)
+
+### Added note Synced
+
+![Added note Synced](offlinenotesapp/assets/screenshots/added_note_synced.jpeg)
+
+### Synced note from server
+
+![Synced note from server](offlinenotesapp/assets/screenshots/synced_note_from_server.jpeg)
+
+### Edit note
+
+![Edit note](offlinenotesapp/assets/screenshots/edit_note.jpeg)
+
+### Edit note
+
+![Edit note](offlinenotesapp/assets/screenshots/edit_note_2.jpeg)
+
+### Conflict - Both server and local editted the same note after last sync
+
+![Conflict - Both server and local editted after last sync](offlinenotesapp/assets/screenshots/both_server_local_editted_conflict.jpeg)
+
+### Conflict - Local editted and server deleted the same note after last sync
+
+![Conflict - Local editted and server deleted the same note after last sync](offlinenotesapp/assets/screenshots/server_version_deleted_conflict.jpeg)
+
+### Syncing
+
+![Syncing](offlinenotesapp/assets/screenshots/syncing_2.jpeg)
+
+### Delete note
+
+![Delete note](offlinenotesapp/assets/screenshots/delete_note.jpeg)
