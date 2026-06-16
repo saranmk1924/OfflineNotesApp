@@ -174,7 +174,7 @@ class ConflictDialog {
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 12,
-                  vertical: 14,
+                  vertical: 16,
                 ),
                 backgroundColor: AppPalette.purple,
                 foregroundColor: AppPalette.white,
@@ -206,7 +206,7 @@ class ConflictDialog {
               style: OutlinedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 12,
-                  vertical: 14,
+                  vertical: 16,
                 ),
                 side: const BorderSide(color: AppPalette.purple),
                 shape: RoundedRectangleBorder(

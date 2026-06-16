@@ -77,6 +77,10 @@ class DeleteConfirmationDialog {
           actions: [
             OutlinedButton(
               style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 16,
+                ),
                 side: const BorderSide(color: AppPalette.purple),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -93,6 +97,10 @@ class DeleteConfirmationDialog {
 
             ElevatedButton(
               style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 16,
+                ),
                 backgroundColor: AppPalette.red,
                 foregroundColor: AppPalette.white,
                 shape: RoundedRectangleBorder(
