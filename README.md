@@ -16,11 +16,11 @@ From an architectural standpoint, the project follows **Clean Architecture princ
 
 Overall, this project represents a production-ready offline-first notes application with strong synchronization capabilities, conflict resolution mechanisms, and a clean modular architecture. It ensures that user data remains safe, consistent, and accessible across both offline and online environments, providing a seamless experience regardless of network conditions.
 
-## Screenshots
-
 ## Demo Video
 
 [Download Demo Video](offlinenotesapp/assets/videos/demo_clip.mp4)
+
+## Screenshots
 
 ### Syncing
 
