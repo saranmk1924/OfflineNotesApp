@@ -10,7 +10,6 @@ import 'package:offlinenotesapp/feature/notes/presentation/cubit/connectivity_cu
 import 'package:offlinenotesapp/feature/notes/presentation/pages/notes_page.dart';
 
 Future<void> main() async {
-  print("Current time: ${DateTime.now().toUtc().toIso8601String()}");
   WidgetsFlutterBinding.ensureInitialized();
 
   await Hive.initFlutter();
@@ -18,7 +17,7 @@ Future<void> main() async {
   final notesBox = await Hive.openBox(HiveConstants.notesBox);
   final appBox = await Hive.openBox(HiveConstants.appBox);
 
-  await initDependencies(notesBox,appBox);
+  await initDependencies(notesBox, appBox);
 
   runApp(const OfflineNotesApp());
 }

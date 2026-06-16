@@ -1,6 +1,6 @@
 import 'package:offlinenotesapp/feature/notes/data/datasource/remote/notes_remote_datasource.dart';
 import 'package:offlinenotesapp/feature/notes/domain/entities/conflict_entity.dart';
-import 'package:offlinenotesapp/feature/notes/domain/entities/sync_status.dart';
+import 'package:offlinenotesapp/core/enums/sync_status.dart';
 
 import '../../domain/entities/note_entity.dart';
 import '../../domain/repository/notes_repository.dart';
@@ -55,20 +55,6 @@ class NotesRepositoryImpl implements NotesRepository {
 
       for (final note in localNotes) {
         final serverNote = await remoteDataSource.getNoteById(note.id);
-        print("LOCAL LAST SYNC => ${note.lastSyncedAt}");
-        print("LOCAL UPDATED   => ${note.updatedAt}");
-
-        print("SERVER UPDATED  => ${serverNote?.updatedAt}");
-
-        print(
-          "LOCAL DELETED AFTER SYNC => "
-          "${note.lastSyncedAt != null && note.updatedAt.isAfter(note.lastSyncedAt!)}",
-        );
-
-        print(
-          "SERVER CHANGED AFTER SYNC => "
-          "${serverNote != null && note.lastSyncedAt != null && serverNote.updatedAt.isAfter(note.lastSyncedAt!)}",
-        );
         if (note.isDeleted) {
           final localDeletedAfterSync =
               note.lastSyncedAt != null &&
@@ -80,8 +66,6 @@ class NotesRepositoryImpl implements NotesRepository {
               serverNote.updatedAt.isAfter(note.lastSyncedAt!);
 
           if (localDeletedAfterSync && serverChangedAfterSync) {
-            print("DELETE VS UPDATE CONFLICT DETECTED");
-
             return ConflictEntity(localNote: note, serverNote: serverNote);
           }
 

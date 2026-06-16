@@ -9,4 +9,5 @@ class AppPalette {
   static const Color white24 = Colors.white24;
   static const Color green = Colors.green;
   static const Color red = Colors.redAccent;
+  static const Color loaderShade = Colors.black54;
 }

@@ -1,6 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:offlinenotesapp/feature/notes/domain/entities/note_entity.dart';
-import 'package:offlinenotesapp/feature/notes/domain/entities/sync_status.dart';
+import 'package:offlinenotesapp/core/enums/sync_status.dart';
 import 'package:offlinenotesapp/feature/notes/domain/usecase/add_note_usecase.dart';
 import 'package:offlinenotesapp/feature/notes/domain/usecase/check_conflict_usecase.dart';
 import 'package:offlinenotesapp/feature/notes/domain/usecase/delete_note_usecase.dart';
@@ -83,10 +83,6 @@ class NoteBloc extends Bloc<NoteEvent, NoteState> {
       ),
     );
 
-    print("IS DELETED => ${note.isDeleted}");
-    print("UPDATED AT => ${note.updatedAt}");
-    print("LAST SYNCED => ${note.lastSyncedAt}");
-
     await _emitLoaded(emit);
   }
 
@@ -96,7 +92,6 @@ class NoteBloc extends Bloc<NoteEvent, NoteState> {
   ) async {
     List<NoteEntity> previousNotes =[];
     try{
-    print("SYNC STARTED");
     // get latest snapshot BEFORE sync
     final notes = await getNotes();
     final activeNotes = notes.where((n) => !n.isDeleted).toList();
@@ -105,7 +100,6 @@ class NoteBloc extends Bloc<NoteEvent, NoteState> {
     final conflict = await syncNotes();
 
     if (conflict != null) {
-      print("CONFLICT STATE EMITTED");
       emit(
         ConflictDetectedState(
           localNote: conflict.localNote,
@@ -153,7 +147,6 @@ class NoteBloc extends Bloc<NoteEvent, NoteState> {
       if (currentState is ConflictDetectedState) {
         emit(ConflictResolvingState(previousNotes: currentState.previousNotes));
       }
-      print("LOCAL VERSION SELECTED");
       await useLocalVersion(event.note);
 
       emit(NoteSyncSuccess());
@@ -181,7 +174,6 @@ class NoteBloc extends Bloc<NoteEvent, NoteState> {
       if (currentState is ConflictDetectedState) {
         emit(ConflictResolvingState(previousNotes: currentState.previousNotes));
       }
-      print("SERVER VERSION SELECTED");
       await useServerVersion(event.note);
 
       emit(NoteSyncSuccess());

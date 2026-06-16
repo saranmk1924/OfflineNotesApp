@@ -4,7 +4,7 @@ import 'package:offlinenotesapp/core/constants/app_palette.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../domain/entities/note_entity.dart';
-import '../../domain/entities/sync_status.dart';
+import '../../../../core/enums/sync_status.dart';
 import '../bloc/note_bloc.dart';
 import '../bloc/note_event.dart';
 
@@ -149,24 +149,33 @@ class _AddEditNotePageState extends State<AddEditNotePage> {
                 ),
               ),
             ),
-            const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppPalette.purple,
-                  foregroundColor: AppPalette.white,
-                  minimumSize: const Size(double.infinity, 56),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                Expanded(child: SizedBox()),
+                Expanded(
+                  flex: 2,
+                  child: SizedBox(
+                    // width: double.infinity,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppPalette.purple,
+                        foregroundColor: AppPalette.white,
+                        minimumSize: const Size(double.infinity, 56),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      onPressed: saveNote,
+                      child: Text(
+                        isEdit ? 'Update' : 'Save',
+                        style: TextStyle(fontSize: 18),
+                      ),
+                    ),
                   ),
                 ),
-                onPressed: saveNote,
-                child: Text(
-                  isEdit ? 'Update' : 'Save',
-                  style: TextStyle(fontSize: 18),
-                ),
-              ),
+                Expanded(child: SizedBox()),
+              ],
             ),
           ],
         ),

@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-import 'sync_status.dart';
+import '../../../../core/enums/sync_status.dart';
 
 class NoteEntity extends Equatable {
   final String id;

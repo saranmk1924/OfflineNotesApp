@@ -1,5 +1,5 @@
 import '../../domain/entities/note_entity.dart';
-import '../../domain/entities/sync_status.dart';
+import '../../../../core/enums/sync_status.dart';
 
 class NoteModel extends NoteEntity {
   const NoteModel({
@@ -57,6 +57,7 @@ class NoteModel extends NoteEntity {
     );
   }
 
+  @override
   NoteModel copyWith({
     String? id,
     String? title,
