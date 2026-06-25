@@ -18,6 +18,8 @@ Overall, this project represents a production-ready offline-first notes applicat
 
 ## Demo Video
 
+[Watch the Demo on YouTube](https://www.youtube.com/watch?v=SQKchnyJvNY&t=17s)
+
 [Download Demo Video](offlinenotesapp/assets/videos/demo_clip.mp4)
 
 ## Screenshots
